@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AuthLayout } from './AuthLayout';
 import { useApp } from '../../context/AppContext';
+import { SHOW_DEMO_LOGIN } from './roleLock';
 import { 
   Store, 
   Mail, 
@@ -31,8 +32,8 @@ export const RestaurantAuth: React.FC<RestaurantAuthProps> = ({ initialMode, mod
   }, [effectiveMode]);
 
   // Login State
-  const [emailOrPhone, setEmailOrPhone] = useState('chef.vikram@royalrasoi.in');
-  const [password, setPassword] = useState('rasoi123');
+  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [password, setPassword] = useState('');
 
   // Register State
   const [ownerName, setOwnerName] = useState('');
@@ -41,6 +42,7 @@ export const RestaurantAuth: React.FC<RestaurantAuthProps> = ({ initialMode, mod
   const [fssaiNumber, setFssaiNumber] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
   const [city, setCity] = useState('Indore');
   const [address, setAddress] = useState('');
 
@@ -61,8 +63,8 @@ export const RestaurantAuth: React.FC<RestaurantAuthProps> = ({ initialMode, mod
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ownerName || !restaurantName || !regEmail || !regPhone) {
-      setError('Please fill all mandatory kitchen details (*)');
+    if (!ownerName || !restaurantName || !regEmail || !regPhone || regPassword.length < 8) {
+      setError('Please fill all mandatory kitchen details (*) and a password of at least 8 characters.');
       return;
     }
 
@@ -73,9 +75,10 @@ export const RestaurantAuth: React.FC<RestaurantAuthProps> = ({ initialMode, mod
         name: ownerName,
         email: regEmail,
         phone: regPhone,
+        password: regPassword,
         restaurantName,
         cuisine,
-        fssaiNumber: fssaiNumber || '11422850000341',
+        fssaiNumber,
         city,
         address,
     }, 'restaurant');
@@ -89,7 +92,7 @@ export const RestaurantAuth: React.FC<RestaurantAuthProps> = ({ initialMode, mod
   const handleDemoFill = () => {
     if (isLogin) {
       setEmailOrPhone('chef.vikram@royalrasoi.in');
-      setPassword('rasoi123');
+      setPassword('password');
     } else {
       setOwnerName('Master Chef Anand Verma');
       setRestaurantName('Shahi Annapurna Bhojnalaya');
@@ -98,6 +101,7 @@ export const RestaurantAuth: React.FC<RestaurantAuthProps> = ({ initialMode, mod
       setRegPhone('+91 98260 77665');
       setRegEmail('anand.chef@annapurna.in');
       setCity('Indore');
+      setRegPassword('password123');
       setAddress('45 Chhappan Dukan Food Market, New Palasia, Indore');
     }
   };
@@ -138,7 +142,7 @@ export const RestaurantAuth: React.FC<RestaurantAuthProps> = ({ initialMode, mod
         </div>
 
         {/* Demo Box */}
-        <div className="mb-5 p-3 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-between text-xs text-amber-900">
+        <div hidden={!SHOW_DEMO_LOGIN} className="mb-5 p-3 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-between text-xs text-amber-900">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
             <div>
@@ -343,6 +347,26 @@ export const RestaurantAuth: React.FC<RestaurantAuthProps> = ({ initialMode, mod
                 />
               </div>
             </div>
+            <div>
+              <label htmlFor="reg-password" className="block text-xs font-bold text-slate-700 mb-1">
+                Create Password * <span className="text-[10px] text-slate-400 font-medium">(min 8 characters)</span>
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  id="reg-password"
+                  type="password"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+            </div>
+
 
             <button
               type="submit"

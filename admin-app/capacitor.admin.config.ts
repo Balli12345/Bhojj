@@ -4,7 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.bhojj.admin',
   appName: 'BHOJJ Admin',
   webDir: 'dist',
-  bundledWebRuntime: false,
   android: {
     allowMixedContent: false,
     backgroundColor: '#ffffff'

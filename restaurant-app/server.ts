@@ -1,11 +1,11 @@
 import express from 'express';
-import admin from 'firebase-admin';
+import { applicationDefault, initializeApp } from 'firebase-admin/app';
 import { authenticate, authorize } from './src/middleware/auth';
 
 // Initialize Firebase Admin (Ensure you have service account credentials)
 // In AI Studio, this might need specific config or environment variables
-admin.initializeApp({
-  credential: admin.credential.applicationDefault()
+initializeApp({
+  credential: applicationDefault()
 });
 
 const app = express();

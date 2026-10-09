@@ -52,7 +52,7 @@ const MainRouter: React.FC = () => {
   }, [setCurrentView]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 antialiased selection:bg-orange-500 selection:text-white">
+    <div className={`min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 antialiased selection:bg-orange-500 selection:text-white ${currentView === 'customer_dashboard' ? 'pb-16 md:pb-0' : ''}`}>
       <Header />
       <RealtimeAlertBanner />
       <PortalSwitcherModal />

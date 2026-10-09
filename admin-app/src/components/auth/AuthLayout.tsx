@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { UtensilsCrossed, ArrowLeft, Layers, ShieldCheck, CheckCircle2, Store, Bike } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { RoleLockContext } from './roleLock';
 
 interface AuthLayoutProps {
   title: string;
@@ -24,6 +25,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   children,
 }) => {
   const { setPortalModalOpen, setCurrentView } = useApp();
+  const lockedRole = useContext(RoleLockContext);
 
   return (
     <div className="min-h-[calc(100vh-4.5rem)] bg-slate-50 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
@@ -45,14 +47,14 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                 </div>
                 <span className="text-2xl font-black tracking-tight">Bhojj</span>
               </div>
-              <button
+              {!lockedRole && (<button
                 onClick={() => setPortalModalOpen(true)}
                 className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 backdrop-blur-md transition-colors flex items-center gap-1.5"
                 title="Switch to another portal"
               >
                 <Layers className="w-3.5 h-3.5" />
                 <span>Switch Portal</span>
-              </button>
+              </button>)}
             </div>
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md mb-3">
@@ -86,13 +88,13 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
               <ShieldCheck className="w-4 h-4" />
               <span>Verified & Secured Bhojj Portal</span>
             </div>
-            <button
+            {!lockedRole && (<button
               onClick={() => setCurrentView('customer_dashboard')}
               className="hover:underline flex items-center gap-1 text-white font-medium"
             >
               <ArrowLeft className="w-3 h-3" />
               <span>Guest Explore</span>
-            </button>
+            </button>)}
           </div>
 
         </div>
@@ -104,7 +106,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           </div>
 
           {/* Direct Portal Quick Links Footer */}
-          <div className="mt-8 pt-5 border-t border-slate-100">
+          <div className={lockedRole ? 'hidden' : 'mt-8 pt-5 border-t border-slate-100'}>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
               Other Bhojj Access Portals:
             </div>

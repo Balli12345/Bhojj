@@ -5,6 +5,6 @@ import '../index.css';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App initialView="restaurant_dashboard" />
+    <App appRole="restaurant" />
   </React.StrictMode>
 );
