@@ -1,0 +1,29 @@
+BHOJJ HOSTINGER PRODUCTION CHECKLIST
+
+[ ] Create MySQL database/user
+[ ] Import database/schema.sql
+[ ] Import database/seed.sql ONCE
+[ ] Configure DB_HOST / DB_NAME / DB_USER / DB_PASSWORD
+[ ] Configure BHOJJ_ALLOWED_ORIGINS with exact HTTPS origins
+[ ] Point api subdomain to public/api
+[ ] Set VITE_API_BASE_URL before npm run build
+[ ] Upload dist contents to customer root
+[ ] Verify /api/health
+[ ] Verify customer registration/login
+[ ] Verify restaurant registration/login
+[ ] Verify delivery registration/login
+[ ] Create/verify admin credentials
+[ ] Place test order
+[ ] Restaurant accepts/prepares/marks ready
+[ ] Assign rider
+[ ] Rider verifies OTP and completes delivery
+[ ] Verify admin order/user views
+[ ] Change seeded passwords
+[ ] Disable/delete setup artifacts if any
+[ ] Enable backups and HTTPS
+
+[ ] Import the updated rider_locations table from schema.sql
+[ ] Test /riders/location from Delivery Android app
+[ ] Test /orders/{id}/auto-assign with real rider coordinates
+[ ] Test invalid order status transitions return 409
+[ ] Verify admin.bhojj.com is the only allowed production origin unless additional origins are intentionally required

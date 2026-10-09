@@ -1,0 +1,163 @@
+import { Coupon } from '../types';
+
+export const INITIAL_COUPONS: Coupon[] = [
+  {
+    id: 'coup-1',
+    code: 'BHOJJ50',
+    title: 'Flat ₹50 OFF',
+    description: 'Devotee Special: Flat ₹50 discount on authentic Braj bhog and thalis',
+    discountType: 'flat',
+    discountValue: 50,
+    minOrderAmount: 149,
+    badge: 'DEVOTEE FAVORITE',
+    validTill: '2026-12-31',
+    category: 'Welcome & Festive',
+    terms: [
+      'Minimum cart value of ₹149 required',
+      'Applicable on all pure Satvik thalis and prasad',
+      'Valid for both Dine-in pre-orders and Ashram deliveries'
+    ],
+    isFeatured: true,
+    usageCount: 1420,
+    isActive: true,
+  },
+  {
+    id: 'coup-2',
+    code: 'RADHA25',
+    title: '25% OFF up to ₹100',
+    description: 'Radha Kund Special: 25% instant discount on pure desi cow ghee preparations',
+    discountType: 'percentage',
+    discountValue: 25,
+    minOrderAmount: 249,
+    maxDiscount: 100,
+    badge: 'RADHA KUND SPECIAL',
+    validTill: '2026-11-30',
+    category: 'Ghee & Specials',
+    terms: [
+      'Minimum cart value of ₹249 required',
+      'Maximum discount capped at ₹100',
+      'Valid on Giriraj Mukharvind and Radha Kund kitchen partners'
+    ],
+    isFeatured: true,
+    usageCount: 890,
+    isActive: true,
+  },
+  {
+    id: 'coup-3',
+    code: 'FREEDEL',
+    title: '100% FREE Ashram Delivery',
+    description: 'Save ₹30 delivery charges on all Goverdhan parikrama ashrams & dharamshalas',
+    discountType: 'flat',
+    discountValue: 30,
+    minOrderAmount: 199,
+    badge: 'FREE DELIVERY',
+    validTill: '2026-12-31',
+    category: 'Delivery Seva',
+    terms: [
+      'Minimum order amount of ₹199',
+      'Waiver applies to standard delivery fee (₹30)',
+      'Valid across Dan Ghati, Jatipura, and Govardhan perimeter'
+    ],
+    isFeatured: true,
+    usageCount: 2310,
+    isActive: true,
+  },
+  {
+    id: 'coup-4',
+    code: 'TIFFIN20',
+    title: '20% OFF Daily Meals',
+    description: 'Save 20% up to ₹80 on home-style Satvik tiffins and lunch subscriptions',
+    discountType: 'percentage',
+    discountValue: 20,
+    minOrderAmount: 180,
+    maxDiscount: 80,
+    badge: 'DAILY TIFFIN',
+    validTill: '2026-10-31',
+    category: 'Daily Tiffins',
+    terms: [
+      'Minimum order value ₹180',
+      'Max discount ₹80',
+      'Valid on daily thali & tiffin box categories'
+    ],
+    isFeatured: false,
+    usageCount: 540,
+    isActive: true,
+  },
+  {
+    id: 'coup-5',
+    code: 'PARIKRAMA100',
+    title: 'Flat ₹100 OFF Family Feast',
+    description: 'Special discount for parikrama devotee groups and family thalis',
+    discountType: 'flat',
+    discountValue: 100,
+    minOrderAmount: 499,
+    badge: 'GROUP FEAST',
+    validTill: '2026-12-31',
+    category: 'Group & Family',
+    terms: [
+      'Minimum order value ₹499',
+      'Flat ₹100 deducted directly from total',
+      'Can be clubbed with free delivery on orders over ₹299'
+    ],
+    isFeatured: true,
+    usageCount: 670,
+    isActive: true,
+  },
+  {
+    id: 'coup-6',
+    code: 'BHANDARA15',
+    title: '15% OFF Bhandara Seva',
+    description: 'Bulk prasad, bhandara orders, and sacred sweet distributions',
+    discountType: 'percentage',
+    discountValue: 15,
+    minOrderAmount: 350,
+    maxDiscount: 150,
+    badge: 'BHANDARA SEVA',
+    validTill: '2026-12-31',
+    category: 'Sacred Bhandara',
+    terms: [
+      'Minimum cart value ₹350',
+      'Maximum savings capped at ₹150',
+      'Valid on Prasad and Bhandara categories'
+    ],
+    isFeatured: false,
+    usageCount: 380,
+    isActive: true,
+  },
+  {
+    id: 'coup-7',
+    code: 'SATVIK30',
+    title: 'Flat ₹30 OFF Satvik Meal',
+    description: 'Instant discount on any pure vegetarian no-onion no-garlic order',
+    discountType: 'flat',
+    discountValue: 30,
+    minOrderAmount: 120,
+    badge: 'PURE SATVIK',
+    validTill: '2026-12-31',
+    category: 'Satvik Quick',
+    terms: [
+      'Minimum order value ₹120',
+      'Flat ₹30 discount',
+      'Valid for all registered devotees and pilgrims'
+    ],
+    isFeatured: false,
+    usageCount: 1120,
+    isActive: true,
+  }
+];
+
+export function calculateCouponDiscount(coupon: Coupon, cartSubtotal: number): number {
+  if (cartSubtotal < coupon.minOrderAmount) {
+    return 0;
+  }
+  
+  if (coupon.discountType === 'flat') {
+    return Math.min(coupon.discountValue, cartSubtotal);
+  } else {
+    const rawDiscount = Math.round((cartSubtotal * coupon.discountValue) / 100);
+    if (coupon.maxDiscount && coupon.maxDiscount > 0) {
+      return Math.min(rawDiscount, coupon.maxDiscount, cartSubtotal);
+    }
+    return Math.min(rawDiscount, cartSubtotal);
+  }
+}
