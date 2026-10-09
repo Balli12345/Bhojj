@@ -30,11 +30,19 @@ console.log(`Project root: ${root}`);
 console.log(`Role HTML: ${roleHtml}`);
 console.log(`Prepared entry: ${indexHtml}`);
 console.log(`Syncing Android assets using ${config}...`);
-execFileSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['cap', 'sync', 'android', '--config', config], {
-  cwd: root,
-  stdio: 'inherit',
-  shell: process.platform === 'win32'
-});
+// The Capacitor CLI has no --config flag; swap the role config into capacitor.config.ts for the sync.
+const defaultConfig = path.join(root, 'capacitor.config.ts');
+const original = fs.existsSync(defaultConfig) ? fs.readFileSync(defaultConfig) : null;
+fs.copyFileSync(path.join(root, config), defaultConfig);
+try {
+  execFileSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['cap', 'sync', 'android'], {
+    cwd: root,
+    stdio: 'inherit',
+    shell: process.platform === 'win32'
+  });
+} finally {
+  if (original) fs.writeFileSync(defaultConfig, original);
+}
 const androidIndex = path.join(root, 'android', 'app', 'src', 'main', 'assets', 'public', 'index.html');
 if (!fs.existsSync(androidIndex)) throw new Error(`Capacitor sync did not create ${androidIndex}`);
 const synced = fs.readFileSync(androidIndex, 'utf8');
