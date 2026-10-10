@@ -13,7 +13,7 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         manifest: {
           id: '/',
-          name: 'Bhojj Delivery App',
+          name: 'Bhojj',
           short_name: 'Bhojj',
           description: 'A complete food delivery management system.',
           theme_color: '#ffffff',
@@ -57,6 +57,7 @@ export default defineConfig(() => {
           customer: path.resolve(__dirname, 'customer.html'),
           restaurant: path.resolve(__dirname, 'restaurant.html'),
           delivery: path.resolve(__dirname, 'delivery.html'),
+          admin: path.resolve(__dirname, 'admin.html'),
         },
       },
     },
