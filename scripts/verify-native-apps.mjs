@@ -23,6 +23,11 @@ for (const role of roles) {
   if (!cap.includes(`com.bhojj.${role}`)) failures.push(`${app}: capacitor.config.ts appId does not match ${role}`);
   if (!cap.includes('webDir: \'dist\'')) failures.push(`${app}: Capacitor webDir must be dist`);
 
+  const vite = read(`${app}/vite.config.ts`);
+  for (const match of vite.matchAll(/path\\.resolve\\(__dirname, '([^']+\\.html)'\\)/g)) {
+    if (!fs.existsSync(path.join(root, app, match[1]))) failures.push(`${app}: Vite references missing HTML entry ${match[1]}`);
+  }
+
   const prep = read(`${app}/scripts/prepare-native.mjs`);
   if (!prep.includes('allowedRoles') || !prep.includes('capacitor.${role}.config.ts')) {
     failures.push(`${app}: native preparation must validate role and select its Capacitor config`);
