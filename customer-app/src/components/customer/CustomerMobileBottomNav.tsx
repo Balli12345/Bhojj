@@ -31,6 +31,13 @@ export const CustomerMobileBottomNav: React.FC = () => {
     return () => window.removeEventListener('open-customer-tab', onTab);
   }, []);
 
+  useEffect(() => {
+    if (currentView === 'customer_dashboard' && currentUser && active === 'account') {
+      // Guest sign-in returns to the menu tab; keep the bottom-nav highlight in sync.
+      setActive('home');
+    }
+  }, [currentView, currentUser]);
+
   if (currentView !== 'customer_dashboard') return null;
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
