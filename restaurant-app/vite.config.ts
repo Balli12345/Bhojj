@@ -57,7 +57,6 @@ export default defineConfig(() => {
           customer: path.resolve(__dirname, 'customer.html'),
           restaurant: path.resolve(__dirname, 'restaurant.html'),
           delivery: path.resolve(__dirname, 'delivery.html'),
-          admin: path.resolve(__dirname, 'admin.html'),
         },
       },
     },
