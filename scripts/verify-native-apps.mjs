@@ -24,7 +24,7 @@ for (const role of roles) {
   if (!cap.includes('webDir: \'dist\'')) failures.push(`${app}: Capacitor webDir must be dist`);
 
   const vite = read(`${app}/vite.config.ts`);
-  for (const match of vite.matchAll(/path\\.resolve\\(__dirname, '([^']+\\.html)'\\)/g)) {
+  for (const match of vite.matchAll(/path\.resolve\(__dirname, '([^']+\.html)'\)/g)) {
     if (!fs.existsSync(path.join(root, app, match[1]))) failures.push(`${app}: Vite references missing HTML entry ${match[1]}`);
   }
 
