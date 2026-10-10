@@ -753,6 +753,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
         email: userData.email || '',
         phone: userData.phone || '',
         password: userData.password || '',
+        role,
         city: userData.city || '',
         address: userData.address || '',
         dietaryPreference: userData.dietaryPreference,
