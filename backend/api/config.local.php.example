@@ -1,0 +1,11 @@
+<?php
+// Copy to config.local.php in this api/ folder and fill in real Hostinger values.
+// Never upload real credentials to a public repository or share them in chat.
+return [
+    'DB_HOST' => 'localhost',
+    'DB_NAME' => 'YOUR_HOSTINGER_DB_NAME',
+    'DB_USER' => 'YOUR_HOSTINGER_DB_USER',
+    'DB_PASSWORD' => 'CHANGE_TO_A_LONG_RANDOM_PASSWORD',
+    'APP_ENV' => 'production',
+    'BHOJJ_ALLOWED_ORIGINS' => 'https://bhojj.com,https://www.bhojj.com',
+];

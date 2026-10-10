@@ -1,0 +1,26 @@
+BHOJJ Customer Mobile WebView UI Update
+========================================
+
+Baseline:
+- Original BHOJJ Customer UI is preserved.
+- No desktop layout redesign.
+- Existing colors, typography, cards, sections, imagery and component hierarchy are untouched.
+
+Mobile-only improvements:
+- Added CustomerMobileBottomNav.tsx.
+- Bottom navigation: Home / Explore / Orders / Cart / Account.
+- Uses existing CustomerDashboard tab events and existing cart state.
+- Active order/cart badges are shown when applicable.
+- Added mobile viewport overflow protection and Android safe-area support.
+- Bottom navigation is rendered only for customer_dashboard and only on md-and-smaller screens.
+
+Validation status:
+- Source-level changes applied.
+- Full npm build not run in this environment because node_modules are not present.
+- APK generation is therefore NOT VERIFIED in this package.
+
+Build:
+1. npm install
+2. npm run build
+3. For customer Android: npm run sync:android:customer
+4. Open android/ in Android Studio and build APK/AAB.

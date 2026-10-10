@@ -1,0 +1,6 @@
+{
+  "name": "Bhojj - Multi-Role Food Portal",
+  "description": "Multi-role food delivery and kitchen management platform with separate login, register, and active dashboards for Customers, Restaurants, Delivery Partners, and Admins.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

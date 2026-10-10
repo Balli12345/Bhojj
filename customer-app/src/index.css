@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@keyframes toastProgress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+
+/* Customer WebView mobile polish: visual design stays unchanged; these rules
+   only prevent viewport overflow and reserve safe-area space for the mobile nav. */
+html, body, #root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 767px) {
+  .bhojj-mobile-bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-x: none;
+  }
+}

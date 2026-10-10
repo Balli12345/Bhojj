@@ -1,0 +1,244 @@
+{
+  "DEFAULT_HERO_SLIDES": [
+    {
+      "id": "slide-thali",
+      "menuId": "satvik-2",
+      "chipLabel": "🍛 Royal Thali",
+      "badge": "✨ GOVERDHAN BESTSELLER • 100% COW GHEE",
+      "timer": "Fresh Batch Ready",
+      "title": "Shri Radharani Royal Satvik Thali",
+      "subtitle": "4 Desi Ghee Phulkas, Arhar Dal Tadka, Paneer Bhujia, Jeera Rice & Peda Prasad",
+      "description": "Cooked fresh using traditional temple rasoi recipes. Pure Satvik (strictly Zero Onion, Zero Garlic) blessed with divine taste and aroma.",
+      "price": 150,
+      "mrp": 200,
+      "savings": 50,
+      "prepTime": "25-30 min",
+      "rating": 4.9,
+      "reviewsCount": "1,420+",
+      "pills": [
+        "100% Desi Cow Ghee",
+        "No Onion, No Garlic",
+        "25 Min Hot Delivery",
+        "Sweet Prasad Included"
+      ],
+      "cta": "Order This Thali",
+      "code": "BHOJJ50",
+      "couponText": "FLAT ₹50 OFF with BHOJJ50",
+      "image": "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=900&auto=format&fit=crop&q=80",
+      "category": "Daily Thali",
+      "isActive": true
+    },
+    {
+      "id": "slide-tiffin",
+      "menuId": "satvik-2",
+      "chipLabel": "🌿 Ashram Tiffin",
+      "badge": "🌿 DAILY ASHRAM MEALS • LIGHT & DIGESTIVE",
+      "timer": "Ashram Dispatch Active",
+      "title": "Daily Homestyle Tiffin & Khichdi Seva",
+      "subtitle": "Nutritious Dal, Seasonal Subzi, 4 Tawa Rotis, Rice & Chaas in Eco Leaf Packing",
+      "description": "Specially crafted for ashram residents, elderly pilgrims & long-stay devotees in Goverdhan. Wholesome, non-greasy, and stomach-friendly.",
+      "price": 110,
+      "mrp": 140,
+      "savings": 30,
+      "prepTime": "20-25 min",
+      "rating": 4.8,
+      "reviewsCount": "890+",
+      "pills": [
+        "Eco-friendly Packing",
+        "Ashram Room Delivery",
+        "Daily Tiffin Plan",
+        "Low Oil & Spice"
+      ],
+      "cta": "Order Ashram Tiffin",
+      "code": "TIFFIN20",
+      "couponText": "FLAT 20% OFF with TIFFIN20",
+      "image": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=900&auto=format&fit=crop&q=80",
+      "category": "Daily Meals",
+      "isActive": true
+    },
+    {
+      "id": "slide-prasad",
+      "menuId": "satvik-3",
+      "chipLabel": "🪔 Mathura Peda",
+      "badge": "🪔 AUTHENTIC BRAJ PRASAD • 100% PURE MAWA",
+      "timer": "Dan Ghati Mukharvind Consecrated",
+      "title": "Goverdhan Mathura Peda & Bhog Box (250g)",
+      "subtitle": "Rich Caramelised Khoya Pedas rolled in Boora, Green Cardamom & Saffron",
+      "description": "The signature taste of Braj Bhoomi! Consecrated at Shri Giriraj Mukharvind temple, prepared from pure cow milk mawa with no artificial essence.",
+      "price": 135,
+      "mrp": 175,
+      "savings": 40,
+      "prepTime": "Instant Ready",
+      "rating": 4.95,
+      "reviewsCount": "2,150+",
+      "pills": [
+        "100% Pure Mawa",
+        "Blessed at Mandir",
+        "Long Shelf Life",
+        "Airtight Gift Box"
+      ],
+      "cta": "Order Peda Prasad Box",
+      "code": "FREEDEL",
+      "couponText": "FREE DELIVERY with FREEDEL",
+      "image": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=900&auto=format&fit=crop&q=80",
+      "category": "Prasad",
+      "isActive": true
+    },
+    {
+      "id": "slide-bhandara",
+      "menuId": "satvik-2",
+      "chipLabel": "🙏 Bhandara Seva",
+      "badge": "🙏 SACRED BHANDARA • 10 TO 500+ DEVOTEES",
+      "timer": "Dedicated Seva Van on Parikrama Marg",
+      "title": "Pilgrim Bhandara & Poori Sabzi Trays",
+      "subtitle": "Fluffy Bedmi Pooris, Hing-Jeera Aloo Sabzi, Kaddu Bhog, Raita & Sooji Halwa",
+      "description": "Organize pious Sadhu-Sant Seva, Parikrama Bhog, or family Bhandara anywhere in Goverdhan, Radha Kund or Jatipura with complete eco-pattal set.",
+      "price": 120,
+      "mrp": 160,
+      "savings": 40,
+      "prepTime": "Pre-book & Instant",
+      "rating": 5,
+      "reviewsCount": "640+ Sevas",
+      "pills": [
+        "Direct Ashram Drops",
+        "Eco Pattal Included",
+        "Live KOT Verification",
+        "Bulk Seva Guarantee"
+      ],
+      "cta": "Book Bhandara Seva",
+      "code": "BHANDARA15",
+      "couponText": "FLAT 15% OFF with BHANDARA15",
+      "image": "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=900&auto=format&fit=crop&q=80",
+      "category": "Bhandara",
+      "isActive": true
+    },
+    {
+      "id": "slide-snacks",
+      "menuId": "satvik-1",
+      "chipLabel": "🥟 Ghee Samosa",
+      "badge": "🔥 CRISPY EVENING BHOG • COW GHEE FRIED",
+      "timer": "Fresh & Steaming Hot",
+      "title": "Desi Ghee Samosa & Khasta Kachori (2 pcs)",
+      "subtitle": "Golden Flaky Pastry Stuffed with Spiced Potatoes, Hing, Kaju & Sonth Chutney",
+      "description": "Goverdhan evening pilgrims’ favorite! Fried fresh in pure desi cow ghee without onion or garlic. Served with sweet tamarind and spicy mint coriander chutneys.",
+      "price": 60,
+      "mrp": 90,
+      "savings": 30,
+      "prepTime": "15-20 min",
+      "rating": 4.85,
+      "reviewsCount": "780+",
+      "pills": [
+        "Fried in Cow Ghee",
+        "No Onion, No Garlic",
+        "Tangy Sonth Chutney",
+        "Hot 20 Min Delivery"
+      ],
+      "cta": "Add Samosas to Cart",
+      "code": "BHOJJ50",
+      "couponText": "FLAT ₹50 OFF with BHOJJ50",
+      "image": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=900&auto=format&fit=crop&q=80",
+      "category": "Snacks",
+      "isActive": true
+    }
+  ],
+  "DEFAULT_HEADER_CONFIG": {
+    "announcementText": "Goverdhan Parikrama Satvik Bhojan & Ashram Seva • Pure Cow Desi Ghee • Zero Onion & Garlic",
+    "announcementBadge": "SACRED OFFER",
+    "announcementCode": "BHOJJ50",
+    "helplinePhone": "+91 98231 12345",
+    "defaultAshramLocation": "Dan Ghati Ashram, Goverdhan",
+    "brandName": "Bhojj",
+    "brandTagline": "Pure Desi Ghee Satvik Bhojan"
+  },
+  "DEFAULT_FOOTER_CONFIG": {
+    "aboutDescription": "Bhojj is Goverdhan’s premier sacred Satvik food delivery service dedicated to devotees, pilgrims, and ashram residents with 100% pure cow ghee preparation and zero onion-garlic assurance.",
+    "contactAddress": "Near Shri Giriraj Mukharvind Mandir, Dan Ghati Marg, Goverdhan, Mathura, UP - 281502",
+    "contactPhone": "+91 98231 12345",
+    "contactEmail": "care@bhojj.in",
+    "contactTiming": "7:00 AM - 10:30 PM (Daily Mandir Hours)",
+    "copyrightText": "© 2026 Bhojj Satvik Bhojnalaya & Delivery Network. Consecrated with devotion.",
+    "socialInstagram": "https://instagram.com",
+    "socialFacebook": "https://facebook.com",
+    "socialYoutube": "https://youtube.com",
+    "featurePurityText": "100% Desi Cow Ghee",
+    "featureNoOnionText": "Zero Onion & Garlic",
+    "featureAshramText": "Ashram Room Delivery",
+    "featureEcoText": "Eco Leaf Pattal Packing"
+  },
+  "DEFAULT_CATEGORIES": [
+    {
+      "id": "All",
+      "name": "All",
+      "desc": "Explore full menu",
+      "badge": "",
+      "iconName": "Sparkles",
+      "isActive": true
+    },
+    {
+      "id": "Daily Thali",
+      "name": "Daily Thali",
+      "desc": "Complete homestyle meal",
+      "badge": "POPULAR",
+      "iconName": "UtensilsCrossed",
+      "isActive": true
+    },
+    {
+      "id": "Daily Meals",
+      "name": "Daily Meals",
+      "desc": "Comfort food for every day",
+      "badge": "HEALTHY",
+      "iconName": "Soup",
+      "isActive": true
+    },
+    {
+      "id": "Prasad",
+      "name": "Prasad",
+      "desc": "For home & devotees",
+      "badge": "MANDIR",
+      "iconName": "SunMedium",
+      "isActive": true
+    },
+    {
+      "id": "Pooja Orders",
+      "name": "Pooja Orders",
+      "desc": "Freshly prepared offerings",
+      "badge": "DEVOTION",
+      "iconName": "Award",
+      "isActive": true
+    },
+    {
+      "id": "Bhandara",
+      "name": "Bhandara",
+      "desc": "Single & bulk packs",
+      "badge": "BULK DISCOUNT",
+      "iconName": "Store",
+      "isActive": true
+    },
+    {
+      "id": "Catering",
+      "name": "Catering",
+      "desc": "Gatherings & events",
+      "badge": "EVENTS",
+      "iconName": "UtensilsCrossed",
+      "isActive": true
+    },
+    {
+      "id": "Snacks",
+      "name": "Snacks",
+      "desc": "Samosa, Mathri & Kachori",
+      "badge": "FRESH",
+      "iconName": "Flame",
+      "isActive": true
+    }
+  ],
+  "DEFAULT_PORTAL_CONFIG": {
+    "customerPortalEnabled": true,
+    "restaurantPortalEnabled": true,
+    "riderPortalEnabled": true,
+    "maintenanceNotice": "Portal is currently in scheduled maintenance. Normal services will resume shortly. Hare Krishna!",
+    "allowGuestCheckout": true,
+    "autoAssignRiders": true,
+    "activeAnnouncementBanner": "Devotee Special: Flat ₹50 OFF on first order using coupon code BHOJJ50! Free Ashram delivery over ₹199.",
+    "showAnnouncementBanner": true
+  }
+}
