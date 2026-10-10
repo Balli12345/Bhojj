@@ -7,7 +7,12 @@ header('Cache-Control: no-store');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(self), camera=(self), microphone=()');
-$allowed = array_filter(array_map('trim', explode(',', envv('BHOJJ_ALLOWED_ORIGINS', 'https://bhojj.com,https://www.bhojj.com,https://localhost,http://localhost,capacitor://localhost'))));
+$privateConfig = __DIR__ . '/config.local.php';
+$localConfigForCors = is_file($privateConfig) ? (require $privateConfig) : [];
+$originConfig = is_array($localConfigForCors) && isset($localConfigForCors['BHOJJ_ALLOWED_ORIGINS'])
+    ? (string)$localConfigForCors['BHOJJ_ALLOWED_ORIGINS']
+    : (getenv('BHOJJ_ALLOWED_ORIGINS') ?: 'https://bhojj.com,https://www.bhojj.com,https://localhost,http://localhost,capacitor://localhost');
+$allowed = array_filter(array_map('trim', explode(',', $originConfig)));
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin && (!$allowed || in_array($origin, $allowed, true))) { header('Access-Control-Allow-Origin: '.$origin); header('Vary: Origin'); header('Access-Control-Allow-Credentials: true'); }
 header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token, X-Requested-With, Idempotency-Key');
