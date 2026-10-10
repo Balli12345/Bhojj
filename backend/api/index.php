@@ -14,7 +14,7 @@ $originConfig = is_array($localConfigForCors) && isset($localConfigForCors['BHOJ
     : (getenv('BHOJJ_ALLOWED_ORIGINS') ?: 'https://bhojj.com,https://www.bhojj.com,https://localhost,http://localhost,capacitor://localhost');
 $allowed = array_filter(array_map('trim', explode(',', $originConfig)));
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-if ($origin && (!$allowed || in_array($origin, $allowed, true))) { header('Access-Control-Allow-Origin: '.$origin); header('Vary: Origin'); header('Access-Control-Allow-Credentials: true'); }
+if ($origin && in_array($origin, $allowed, true)) { header('Access-Control-Allow-Origin: '.$origin); header('Vary: Origin'); header('Access-Control-Allow-Credentials: true'); }
 header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token, X-Requested-With, Idempotency-Key');
 header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 if ($_SERVER['REQUEST_METHOD']==='OPTIONS') { http_response_code(204); exit; }
