@@ -1,5 +1,8 @@
 name: BHOJJ Native Apps CI
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main, "fix/**"]
@@ -30,8 +33,8 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: ${{ matrix.app }}/package-lock.json
-      - name: Install locked dependencies
-        run: npm ci
+      - name: Install dependencies and reconcile stale lockfile
+        run: npm install
       - name: TypeScript check
         run: npm run lint
       - name: Build production web assets
@@ -45,3 +48,33 @@ jobs:
           path: BHOJJ-${{ matrix.app }}-UPDATED.zip
           if-no-files-found: error
           retention-days: 14
+
+  refresh-lockfiles:
+    name: Commit reconciled npm lockfiles
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/fix/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Regenerate all four lockfiles
+        run: |
+          for app in customer-app restaurant-app delivery-app admin-app; do
+            (cd "$app" && npm install --package-lock-only --ignore-scripts)
+          done
+      - name: Commit lockfile repairs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add customer-app/package-lock.json restaurant-app/package-lock.json delivery-app/package-lock.json admin-app/package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Repair four native app npm lockfiles"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "Lockfiles already synchronized."
+          fi
