@@ -749,6 +749,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
   ) => {
     try {
       const result = await bhojjApi.register({
+        role,
         name: userData.name || '',
         email: userData.email || '',
         phone: userData.phone || '',

@@ -7,5 +7,5 @@ return [
     'DB_USER' => 'YOUR_HOSTINGER_DB_USER',
     'DB_PASSWORD' => 'CHANGE_TO_A_LONG_RANDOM_PASSWORD',
     'APP_ENV' => 'production',
-    'BHOJJ_ALLOWED_ORIGINS' => 'https://bhojj.com,https://www.bhojj.com',
+    'BHOJJ_ALLOWED_ORIGINS' => 'https://bhojj.com,https://www.bhojj.com,https://localhost,http://localhost,capacitor://localhost',
 ];

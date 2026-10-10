@@ -3,9 +3,9 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 const role = process.argv[2] || 'customer';
-const allowedRoles = new Set(['customer', 'restaurant', 'delivery']);
+const allowedRoles = new Set(['customer', 'restaurant', 'delivery', 'admin']);
 if (!allowedRoles.has(role)) {
-  throw new Error(`Unsupported role "${role}". Expected customer, restaurant, or delivery.`);
+  throw new Error(`Unsupported role "${role}". Expected customer, restaurant, delivery, or admin.`);
 }
 const root = process.cwd();
 if (!fs.existsSync(path.join(root, 'package.json'))) {

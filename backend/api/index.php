@@ -7,13 +7,20 @@ header('Cache-Control: no-store');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(self), camera=(self), microphone=()');
-$allowed = array_filter(array_map('trim', explode(',', getenv('BHOJJ_ALLOWED_ORIGINS') ?: 'https://bhojj.com,https://www.bhojj.com')));
+$privateConfig = __DIR__ . '/config.local.php';
+$localConfigForCors = is_file($privateConfig) ? (require $privateConfig) : [];
+$originConfig = is_array($localConfigForCors) && isset($localConfigForCors['BHOJJ_ALLOWED_ORIGINS'])
+    ? (string)$localConfigForCors['BHOJJ_ALLOWED_ORIGINS']
+    : (getenv('BHOJJ_ALLOWED_ORIGINS') ?: 'https://bhojj.com,https://www.bhojj.com,https://localhost,http://localhost,capacitor://localhost');
+$allowed = array_filter(array_map('trim', explode(',', $originConfig)));
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-if ($origin && (!$allowed || in_array($origin, $allowed, true))) { header('Access-Control-Allow-Origin: '.$origin); header('Vary: Origin'); header('Access-Control-Allow-Credentials: true'); }
+if ($origin && in_array($origin, $allowed, true)) { header('Access-Control-Allow-Origin: '.$origin); header('Vary: Origin'); header('Access-Control-Allow-Credentials: true'); }
 header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token, X-Requested-With, Idempotency-Key');
 header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 if ($_SERVER['REQUEST_METHOD']==='OPTIONS') { http_response_code(204); exit; }
-session_set_cookie_params(['httponly'=>true,'secure'=>true,'samesite'=>'Lax','path'=>'/']);
+$nativeOrigins = ['https://localhost', 'http://localhost', 'capacitor://localhost'];
+$isNativeOrigin = in_array($origin, $nativeOrigins, true);
+session_set_cookie_params(['httponly'=>true,'secure'=>true,'samesite'=>$isNativeOrigin?'None':'Lax','path'=>'/']);
 session_start();
 // Hostinger shared hosting may not expose per-site environment variables to PHP.
 // Optional private api/config.local.php provides the same values without committing secrets.
