@@ -29,8 +29,8 @@ export const CustomerAuth: React.FC<CustomerAuthProps> = ({ initialMode, mode })
   }, [effectiveMode]);
 
   // Form State
-  const [emailOrPhone, setEmailOrPhone] = useState('priya@bhojj.in');
-  const [password, setPassword] = useState('bhojj123');
+  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [password, setPassword] = useState('');
 
   // Register Fields
   const [name, setName] = useState('');
