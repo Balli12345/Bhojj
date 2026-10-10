@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AuthLayout } from './AuthLayout';
 import { useApp } from '../../context/AppContext';
+import { SHOW_DEMO_LOGIN } from './roleLock';
 import { 
   ShieldCheck, 
   Mail, 
@@ -15,8 +16,8 @@ import {
 export const AdminAuth: React.FC = () => {
   const { login } = useApp();
 
-  const [email, setEmail] = useState('admin@bhojj.in');
-  const [securityKey, setSecurityKey] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [securityKey, setSecurityKey] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +35,7 @@ export const AdminAuth: React.FC = () => {
 
   const handleDemoFill = () => {
     setEmail('admin@bhojj.in');
-    setSecurityKey('admin123');
+    setSecurityKey('password');
   };
 
   return (
@@ -65,7 +66,7 @@ export const AdminAuth: React.FC = () => {
         </div>
 
         {/* Demo Box */}
-        <div className="mb-5 p-3 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-between text-xs text-purple-900">
+        <div hidden={!SHOW_DEMO_LOGIN} className="mb-5 p-3 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-between text-xs text-purple-900">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
             <div>

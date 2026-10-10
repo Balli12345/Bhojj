@@ -42,6 +42,7 @@ export interface User {
   email: string;
   phone: string;
   role: UserRole;
+  approvalStatus?: 'approved' | 'pending';
   avatar?: string;
   createdAt: string;
   // Role specific & extended fields

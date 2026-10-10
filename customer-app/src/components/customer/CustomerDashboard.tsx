@@ -639,7 +639,7 @@ export const CustomerDashboard: React.FC = () => {
           
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 sm:pb-0">
             {/* Primary Experience Mode Switcher */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200/80 shrink-0">
+            <div data-customer-tabs className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200/80 shrink-0">
               <button
                 onClick={() => setActiveTab('menu')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${

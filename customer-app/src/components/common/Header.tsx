@@ -96,7 +96,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onSearchChange }) =>
       
       {/* 1. TOP ECOSYSTEM BAR (Dark) */}
       {/* User Instruction: Header se customer app remove krna h, super admin home page par show nhi krna h, sirf Restaurant Partner App aur Delivery Partner App show krna h */}
-      <div className="bg-slate-950 text-slate-200 border-b border-slate-800 text-[11px] py-1.5 px-3 sm:px-6">
+      <div className="hidden md:block bg-slate-950 text-slate-200 border-b border-slate-800 text-[11px] py-1.5 px-3 sm:px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
           <div className="flex items-center gap-2">
@@ -183,6 +183,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onSearchChange }) =>
               onClick={() => setCurrentView('customer_dashboard')}
               className="flex items-center gap-2 text-left focus:outline-hidden group"
               title="Bhojj Satvik Food Home"
+              aria-label="Bhojj home"
             >
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-orange-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform duration-200">
                 <UtensilsCrossed className="w-5 h-5" />
@@ -196,7 +197,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onSearchChange }) =>
                     100% SATVIK
                   </span>
                 </div>
-                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5 hidden xs:block">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5 hidden sm:block">
                   PURE CLOUD KITCHEN • GOVERDHAN, UP
                 </p>
               </div>
@@ -226,12 +227,21 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onSearchChange }) =>
           </div>
 
           {/* Global Search Bar (Food & Restaurants across platform) */}
-          <div className="flex-1 max-w-lg mx-1 sm:mx-3">
+          <div className="hidden md:block flex-1 max-w-lg mx-1 sm:mx-3">
             <GlobalSearch className="w-full" />
           </div>
 
           {/* Right Action Icons & Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowLocationModal(true)}
+              aria-label={`Delivery location: ${selectedAshram}. Change location`}
+              title="Change delivery location"
+              className="lg:hidden min-w-10 min-h-10 inline-flex items-center justify-center rounded-xl text-orange-600 hover:bg-orange-50 border border-slate-200/80 transition-colors"
+            >
+              <MapPin className="w-5 h-5" />
+            </button>
             <PWAInstallButton />
             
             {/* Track Delivery LIVE Button */}
@@ -241,7 +251,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onSearchChange }) =>
                 // notify customer to scroll to orders or trigger tab
                 window.dispatchEvent(new CustomEvent('open-customer-tab', { detail: 'orders' }));
               }}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-orange-50 text-orange-800 border border-orange-200 hover:bg-orange-100 transition-colors"
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-orange-50 text-orange-800 border border-orange-200 hover:bg-orange-100 transition-colors"
               title="Track live orders"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -255,8 +265,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onSearchChange }) =>
                 setCurrentView('customer_dashboard');
                 window.dispatchEvent(new CustomEvent('open-customer-tab', { detail: 'orders' }));
               }}
-              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors relative"
+              className="hidden md:block p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors relative"
               title="My Orders History"
+              aria-label="My orders"
             >
               <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
               {activeOrdersCount > 0 && (
@@ -292,12 +303,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onSearchChange }) =>
                   setIsCartOpen(true);
                 }
               }}
-              className={`relative p-2 sm:px-3 sm:py-2 rounded-xl transition-all flex items-center gap-1.5 border font-black ${
+              className={`relative p-2 sm:px-3 sm:py-2 rounded-xl transition-all hidden md:flex items-center gap-1.5 border font-black ${
                 cartItemCount > 0 
                   ? 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600 shadow-md shadow-orange-600/20' 
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
               }`}
               title="View Cart"
+              aria-label={`Cart, ${cartItemCount} items`}
             >
               <ShoppingBag className={`w-4 h-4 ${cartItemCount > 0 ? 'text-white' : 'text-orange-600'}`} />
               <span className="hidden sm:inline text-xs">
@@ -311,12 +323,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onSearchChange }) =>
             </button>
 
             {/* Notifications Dropdown */}
-            <div className="relative hidden xs:block">
+            <div className="relative">
               <button
                 id="header-notifications-button"
                 onClick={() => setShowNotifDropdown(!showNotifDropdown)}
-                className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 relative transition-colors"
+                className="min-w-10 min-h-10 inline-flex items-center justify-center p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 relative transition-colors"
                 title="Notifications"
+                aria-label={unreadNotifs > 0 ? `Notifications, ${unreadNotifs} unread` : 'Notifications'}
               >
                 <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
                 {unreadNotifs > 0 && (
@@ -325,7 +338,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onSearchChange }) =>
               </button>
 
               {showNotifDropdown && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-88 bg-white rounded-2xl shadow-2xl border border-slate-200 py-3 z-50 animate-in fade-in">
+                <div className="fixed inset-x-3 top-28 sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 mt-2 sm:w-88 bg-white rounded-2xl shadow-2xl border border-slate-200 py-3 z-50 animate-in fade-in">
                   <div className="px-4 pb-2 border-b border-slate-100 flex items-center justify-between">
                     <span className="text-sm font-bold text-slate-900">Live Alerts</span>
                     <span className="text-[11px] bg-slate-100 px-2 py-0.5 rounded-full font-medium text-slate-600">
@@ -362,7 +375,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onSearchChange }) =>
                 <button
                   id="user-profile-menu-button"
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-xl hover:bg-slate-100 border border-slate-200 text-left transition-colors"
+                  aria-label="Account menu"
+                  aria-expanded={showUserMenu}
+                  className="min-h-10 flex items-center gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-xl hover:bg-slate-100 border border-slate-200 text-left transition-colors"
                 >
                   <img
                     src={currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'}
@@ -562,15 +577,19 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onSearchChange }) =>
               <button
                 id="header-sign-in-button"
                 onClick={() => setCurrentView('customer_login')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-xs transition-colors"
+                aria-label="Sign in"
+                className="min-w-10 min-h-10 justify-center inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-xs transition-colors"
               >
                 <UserCircle2 className="w-4 h-4 text-amber-400" />
-                <span>Sign In</span>
+                <span className="hidden sm:inline">Sign In</span>
               </button>
             )}
 
           </div>
 
+        </div>
+        <div className="md:hidden mt-2">
+          <GlobalSearch className="w-full" />
         </div>
       </div>
 

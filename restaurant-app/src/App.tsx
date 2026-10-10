@@ -25,6 +25,9 @@ import { CustomerDashboard } from './components/customer/CustomerDashboard';
 import { RestaurantDashboard } from './components/restaurant/RestaurantDashboard';
 import { DeliveryDashboard } from './components/delivery/DeliveryDashboard';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { RoleAppShell } from './components/auth/RoleAppShell';
+import type { LockedRole } from './components/auth/roleLock';
+import type { PortalView } from './types';
 
 const MainRouter: React.FC = () => {
   const { currentView, setCurrentView } = useApp();
@@ -87,7 +90,14 @@ const MainRouter: React.FC = () => {
   );
 };
 
-export default function App({ initialView }: { initialView?: string }) {
+export default function App({ initialView, appRole }: { initialView?: string; appRole?: LockedRole }) {
+  if (appRole) {
+    return (
+      <AppProvider initialView={`${appRole}_login` as PortalView}>
+        <RoleAppShell role={appRole} />
+      </AppProvider>
+    );
+  }
   return (
     <AppProvider initialView={initialView}>
       <MainRouter />

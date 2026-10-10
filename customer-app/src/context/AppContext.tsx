@@ -54,6 +54,7 @@ interface AppContextType {
   login: (identifier: string, role: UserRole, password?: string) => Promise<{ success: boolean; message?: string }>;
   register: (userData: Partial<User> & { password?: string; restaurantName?: string; cuisine?: string; vehicleType?: any; fssaiNumber?: string }, role: UserRole) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
+  setSessionUser: (user: User | null) => void;
   quickSwitchRole: (role: UserRole) => void;
   
   // Master Users & Switch Control (Super Admin)
@@ -705,6 +706,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
       if (data.user) {
         setCurrentUser(data.user as User);
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
+      } else if (data.user === null) {
+        setCurrentUser(null);
       }
       return data;
     } catch {
@@ -1031,6 +1034,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
 
     const firstRestId = details.restaurantId || (cart[0] ? cart[0].menuItem.restaurantId : 'rest-1');
     const restObj = restaurants.find(r => r.id === firstRestId);
+    const firstRestName = restObj?.name || '';
     const restName = details.restaurantName || (restObj ? restObj.name : 'Bhojj Kitchen Partner');
 
     // Generate random 4-digit OTP for delivery verification
@@ -1783,6 +1787,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
     <AppContext.Provider value={{
       currentUser,
       currentView,
+      setSessionUser: setCurrentUser,
       setCurrentView,
       login,
       register,

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AuthLayout } from './AuthLayout';
 import { useApp } from '../../context/AppContext';
+import { SHOW_DEMO_LOGIN } from './roleLock';
 import { 
   Bike, 
   Phone, 
@@ -30,13 +31,14 @@ export const DeliveryAuth: React.FC<DeliveryAuthProps> = ({ initialMode, mode })
   }, [effectiveMode]);
 
   // Login State
-  const [phoneOrEmail, setPhoneOrEmail] = useState('rajesh.rider@bhojj.in');
-  const [password, setPassword] = useState('rider123');
+  const [phoneOrEmail, setPhoneOrEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   // Register State
   const [riderName, setRiderName] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
   const [vehicleType, setVehicleType] = useState<'Motorcycle' | 'Scooter' | 'Electric Bike' | 'Bicycle'>('Motorcycle');
   const [vehicleNumber, setVehicleNumber] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
@@ -59,8 +61,8 @@ export const DeliveryAuth: React.FC<DeliveryAuthProps> = ({ initialMode, mode })
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!riderName || !regPhone) {
-      setError('Please provide your name and phone number (*)');
+    if (!riderName || !regPhone || !regEmail || regPassword.length < 8) {
+      setError('Please provide your name, phone, email and a password of at least 8 characters (*)');
       return;
     }
 
@@ -70,10 +72,11 @@ export const DeliveryAuth: React.FC<DeliveryAuthProps> = ({ initialMode, mode })
     const res = await register({
         name: riderName,
         phone: regPhone,
-        email: regEmail || `${regPhone.replace(/\D/g, '')}@rider.bhojj.in`,
+        email: regEmail,
+        password: regPassword,
         vehicleType,
-        vehicleNumber: vehicleNumber || 'MP 09 XY 7890',
-        licenseNumber: licenseNumber || 'DL-MP-2022-776655',
+        vehicleNumber,
+        licenseNumber,
         city: zone,
     }, 'delivery');
 
@@ -86,7 +89,7 @@ export const DeliveryAuth: React.FC<DeliveryAuthProps> = ({ initialMode, mode })
   const handleDemoFill = () => {
     if (isLogin) {
       setPhoneOrEmail('rajesh.rider@bhojj.in');
-      setPassword('rider123');
+      setPassword('password');
     } else {
       setRiderName('Suresh Chawla');
       setRegPhone('+91 98270 44332');
@@ -134,7 +137,7 @@ export const DeliveryAuth: React.FC<DeliveryAuthProps> = ({ initialMode, mode })
         </div>
 
         {/* Demo Box */}
-        <div className="mb-5 p-3 rounded-xl bg-blue-50 border border-blue-200/80 flex items-center justify-between text-xs text-blue-900">
+        <div hidden={!SHOW_DEMO_LOGIN} className="mb-5 p-3 rounded-xl bg-blue-50 border border-blue-200/80 flex items-center justify-between text-xs text-blue-900">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
             <div>
@@ -260,6 +263,7 @@ export const DeliveryAuth: React.FC<DeliveryAuthProps> = ({ initialMode, mode })
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                   <input
                     type="email"
+                    required
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
                     placeholder="rider@bhojj.in"
@@ -339,6 +343,26 @@ export const DeliveryAuth: React.FC<DeliveryAuthProps> = ({ initialMode, mode })
                 />
               </div>
             </div>
+            <div>
+              <label htmlFor="reg-password" className="block text-xs font-bold text-slate-700 mb-1">
+                Create Password * <span className="text-[10px] text-slate-400 font-medium">(min 8 characters)</span>
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  id="reg-password"
+                  type="password"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+            </div>
+
 
             <button
               type="submit"
