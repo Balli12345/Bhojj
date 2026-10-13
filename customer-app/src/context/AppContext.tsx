@@ -81,7 +81,7 @@ interface AppContextType {
   orders: Order[];
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   assignRiderToOrder: (orderId: string, riderId: string) => void;
-  completeDeliveryWithOtp: (orderId: string, otp: string) => { success: boolean; message: string };
+  completeDeliveryWithOtp: (orderId: string, otp: string) => Promise<{ success: boolean; message: string }>;
   rateOrder: (orderId: string, rating: number, feedback: string) => void;
   
   // Cart
@@ -1220,29 +1220,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
     }).catch((error: any) => addNotification('Run Acceptance Failed', error?.message || 'Unable to accept delivery run.', 'alert', 'delivery'));
   };
 
-  const completeDeliveryWithOtp = (orderId: string, enteredOtp: string) => {
+  const completeDeliveryWithOtp = async (orderId: string, enteredOtp: string): Promise<{ success: boolean; message: string }> => {
     const targetOrder = orders.find(o => o.id === orderId);
     if (!targetOrder) return { success: false, message: 'Order not found' };
+    if (!/^\\d{4,6}$/.test(enteredOtp.trim())) {
+      return { success: false, message: 'Enter the valid customer OTP.' };
+    }
 
-    // Do not compare against a possibly stale/mock OTP in local UI state.
-    // The central PHP API is authoritative and validates the entered OTP.
-
-    // Server is authoritative: never mark a delivery complete locally until
-    // PHP verifies the OTP and commits the delivered state.
-    void bhojjApi.completeDelivery(orderId, enteredOtp).then(async result => {
+    // The PHP API is authoritative. Do not report success until the server
+    // verifies the OTP and commits the delivery state.
+    try {
+      const result = await bhojjApi.completeDelivery(orderId, enteredOtp.trim());
       if (result.order) {
         setOrders(prev => prev.map(o => o.id === orderId ? result.order as Order : o));
       } else {
         await loadRemoteData();
       }
-      const deliveryEarning = 60 + Math.floor(Math.random() * 25);
-      addNotification('Delivery Completed!', `Order #${orderId} delivered successfully! +₹${deliveryEarning} credited.`, 'earnings', 'delivery');
-      addNotification('Order Delivered!', `Your Bhojj order #${orderId} has arrived! Enjoy your delicious meal.`, 'order', 'customer');
-    }).catch((error: any) => {
-      addNotification('Delivery Completion Failed', error?.message || 'Server rejected delivery OTP.', 'alert', 'delivery');
-    });
-
-    return { success: true, message: 'OTP verification is pending server confirmation.' };
+      addNotification('Delivery Completed!', `Order #${orderId} delivered successfully.`, 'earnings', 'delivery');
+      addNotification('Order Delivered!', `Your Bhojj order #${orderId} has arrived! Enjoy your meal.`, 'order', 'customer');
+      return { success: true, message: 'Delivery verified by server.' };
+    } catch (error: any) {
+      const message = error?.message || 'Server rejected delivery OTP.';
+      addNotification('Delivery Completion Failed', message, 'alert', 'delivery');
+      return { success: false, message };
+    }
   };
 
   const rateOrder = (orderId: string, rating: number, feedback: string) => {
