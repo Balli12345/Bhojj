@@ -1079,36 +1079,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
       addNotification('Order Not Placed', 'The server did not confirm this order. Your cart has been kept; please retry.', 'system', 'customer');
       return null;
     }
-    const serverOrder = serverResult.order as Order;
-
-    const newOrder: Order = serverOrder || {
-      id: orderId,
-      customerId: details.customerId || currentUser?.id || 'guest-user',
-      customerName: details.customerName || currentUser?.name || 'Priya Sharma',
-      customerPhone: details.customerPhone || currentUser?.phone || '+91 98765 43210',
-      deliveryAddress: details.deliveryAddress,
-      restaurantId: firstRestId,
-      restaurantName: restName,
-      items: details.items || cart.map(ci => ({
-        id: ci.menuItem.id,
-        name: ci.menuItem.name,
-        price: ci.menuItem.price,
-        quantity: ci.quantity,
-        isVeg: ci.menuItem.isVeg,
-      })),
-      subtotal,
-      deliveryFee,
-      tax,
-      discount,
-      totalAmount,
-      status: details.status || 'placed',
-      orderTime: details.orderTime || 'Just now',
-      estimatedDeliveryTime: details.estimatedDeliveryTime || 'In 25-30 mins',
-      paymentMethod: details.paymentMethod,
-      paymentStatus: 'Pending (COD)',
-      walletAmountUsed: 0,
-      otp: randomOtp,
-    };
+    const newOrder: Order = serverResult.order as Order;
 
     setOrders(prev => [newOrder, ...prev]);
     clearCart();
@@ -1116,7 +1087,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
 
     addNotification(
       'New Order Placed!',
-      `Order #${newOrder.id} for ₹${totalAmount} has been submitted for ${restName}. OTP: ${randomOtp}`,
+      `Order #${newOrder.id} for ₹${totalAmount} has been submitted for ${restName}. OTP: ${newOrder.otp || 'assigned securely'}`,
       'order',
       'customer'
     );
