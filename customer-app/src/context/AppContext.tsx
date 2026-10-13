@@ -1014,6 +1014,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
   }) => {
     if (cart.length === 0 && (!details.items || details.items.length === 0)) return null;
 
+    // Match the backend's currently supported payment path; do not locally debit wallet
+    // or mark an unverified online payment as paid.
+    if (details.paymentMethod !== 'Cash on Delivery') {
+      addNotification(
+        'Payment Method Unavailable',
+        'Online and Bhojj Wallet payments are temporarily unavailable until secure server-side payment verification is enabled. Please choose Cash on Delivery.',
+        'system',
+        'customer'
+      );
+      return null;
+    }
+
     const calcSubtotal = cart.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
     const subtotal = details.subtotal ?? calcSubtotal;
     const deliveryFee = details.deliveryFee ?? (subtotal > 299 ? 0 : 30);
