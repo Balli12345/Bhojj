@@ -1,4 +1,4 @@
-const API_BASE = (import.meta.env.VITE_BHOJJ_API_URL || 'https://bhojj.com/api').replace(/\/+$/, '');
+const API_BASE = (import.meta.env.VITE_BHOJJ_API_URL || 'https://bhojj-central-api.onrender.com/api').replace(/\/+$/, '');
 
 let csrfToken: string | null = null;
 
