@@ -765,6 +765,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
         licenseNumber: userData.licenseNumber,
       });
       if (!result.user) throw new Error('Registration succeeded but no user was returned.');
+      const approvalStatus = (result.user as any).approvalStatus;
+      if ((role === 'restaurant' || role === 'delivery') && approvalStatus !== 'approved') {
+        setCurrentUser(null);
+        localStorage.removeItem(STORAGE_KEYS.USER);
+        addNotification('Registration Submitted', 'Your account is pending admin approval. You can sign in after approval.', 'system', role);
+        return { success: false, message: result.message || 'Registration submitted. Your account is pending admin approval. Please sign in after approval.' };
+      }
       setCurrentUser(result.user as User);
       setCurrentView(`${role}_dashboard` as PortalView);
       addNotification('Registration Complete!', `Welcome to Bhojj Portal as ${role.toUpperCase()}.`, 'system', role);
