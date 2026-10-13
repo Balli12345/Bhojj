@@ -71,12 +71,12 @@ export const DeliveryDashboard: React.FC = () => {
     o.status === 'delivered'
   );
 
-  const handleVerifyOtpSubmit = (e: React.FormEvent) => {
+  const handleVerifyOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeOrder) return;
     setOtpError('');
 
-    const res = completeDeliveryWithOtp(activeOrder.id, enteredOtp);
+    const res = await completeDeliveryWithOtp(activeOrder.id, enteredOtp);
     if (!res.success) {
       setOtpError(res.message);
     } else {
