@@ -1077,9 +1077,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
 
     addNotification(
       'New Order Placed!',
-      details.paymentMethod === 'Bhojj Wallet'
-        ? `Order #${newOrder.id} booked with Bhojj Wallet (₹${totalAmount} debited). OTP: ${randomOtp}`
-        : `Order #${newOrder.id} for ₹${totalAmount} has been sent to ${restName}. OTP: ${randomOtp}`,
+      `Order #${newOrder.id} for ₹${totalAmount} has been submitted for ${restName}. OTP: ${randomOtp}`,
       'order',
       'customer'
     );
