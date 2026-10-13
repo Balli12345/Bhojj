@@ -1033,18 +1033,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
     const discount = details.discount ?? 0;
     const totalAmount = details.totalAmount ?? Math.max(0, subtotal + deliveryFee + tax - discount);
 
-    if (details.paymentMethod === 'Bhojj Wallet') {
-      if (walletBalance < totalAmount) {
-        addNotification(
-          'Wallet Balance Insufficient',
-          `Order requires ₹${totalAmount}, but your wallet balance is ₹${walletBalance}. Please top up your wallet.`,
-          'system',
-          'customer'
-        );
-        return null;
-      }
-    }
-
     const firstRestId = details.restaurantId || (cart[0] ? cart[0].menuItem.restaurantId : 'rest-1');
     const restObj = restaurants.find(r => r.id === firstRestId);
     const firstRestName = restObj?.name || '';
@@ -1053,10 +1041,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
     // Generate random 4-digit OTP for delivery verification
     const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
     const orderId = `ORD-${Math.floor(7000 + Math.random() * 3000)}`;
-
-    if (details.paymentMethod === 'Bhojj Wallet') {
-      deductWalletFunds(totalAmount, orderId, `1-Click Checkout for Order #${orderId}`);
-    }
 
     const newOrder: Order = {
       id: orderId,
@@ -1082,8 +1066,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
       orderTime: details.orderTime || 'Just now',
       estimatedDeliveryTime: details.estimatedDeliveryTime || 'In 25-30 mins',
       paymentMethod: details.paymentMethod,
-      paymentStatus: details.paymentMethod === 'Cash on Delivery' ? 'Pending (COD)' : 'Paid',
-      walletAmountUsed: details.paymentMethod === 'Bhojj Wallet' ? totalAmount : 0,
+      paymentStatus: 'Pending (COD)',
+      walletAmountUsed: 0,
       otp: randomOtp,
     };
 
