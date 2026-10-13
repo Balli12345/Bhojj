@@ -692,16 +692,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
   const loadRemoteData = async () => {
     try {
       const data = await bhojjApi.getBootstrap();
-      if (Array.isArray(data.restaurants) && data.restaurants.length) setRestaurants(data.restaurants);
-      if (Array.isArray(data.menuItems) && data.menuItems.length) setMenuItems(data.menuItems);
+      if (Array.isArray(data.restaurants)) setRestaurants(data.restaurants);
+      if (Array.isArray(data.menuItems)) setMenuItems(data.menuItems);
       if (Array.isArray(data.orders)) setOrders(data.orders);
-      if (Array.isArray(data.riders) && data.riders.length) setRiders(data.riders);
-      if (Array.isArray(data.coupons) && data.coupons.length) setCoupons(data.coupons);
-      if (Array.isArray(data.users) && data.users.length) setUsers(data.users);
-      if (Array.isArray(data.heroSlides) && data.heroSlides.length) setHeroSlides(data.heroSlides);
+      if (Array.isArray(data.riders)) setRiders(data.riders);
+      if (Array.isArray(data.coupons)) setCoupons(data.coupons);
+      if (Array.isArray(data.users)) setUsers(data.users);
+      if (Array.isArray(data.heroSlides)) setHeroSlides(data.heroSlides);
       if (data.headerConfig) setHeaderConfig((prev: any) => ({ ...prev, ...data.headerConfig }));
       if (data.footerConfig) setFooterConfig((prev: any) => ({ ...prev, ...data.footerConfig }));
-      if (Array.isArray(data.categoriesList) && data.categoriesList.length) setCategoriesList(data.categoriesList);
+      if (Array.isArray(data.categoriesList)) setCategoriesList(data.categoriesList);
       if (data.portalConfig) setPortalConfig((prev: any) => ({ ...prev, ...data.portalConfig }));
       if (data.user) {
         setCurrentUser(data.user as User);
@@ -765,6 +765,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
         licenseNumber: userData.licenseNumber,
       });
       if (!result.user) throw new Error('Registration succeeded but no user was returned.');
+      const approvalStatus = (result.user as any).approvalStatus;
+      if ((role === 'restaurant' || role === 'delivery') && approvalStatus !== 'approved') {
+        setCurrentUser(null);
+        localStorage.removeItem(STORAGE_KEYS.USER);
+        addNotification('Registration Submitted', 'Your account is pending admin approval. You can sign in after approval.', 'system', role);
+        return { success: false, message: result.message || 'Registration submitted. Your account is pending admin approval. Please sign in after approval.' };
+      }
       setCurrentUser(result.user as User);
       setCurrentView(`${role}_dashboard` as PortalView);
       addNotification('Registration Complete!', `Welcome to Bhojj Portal as ${role.toUpperCase()}.`, 'system', role);
@@ -1147,59 +1154,68 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
     return newOrder;
   };
 
-  const updateOrderStatus = (orderId: string, status: OrderStatus) => {
-    void bhojjApi.updateOrderStatus(orderId, status).then(result => {
-      if (result.order) setOrders(prev => prev.map(o => o.id === orderId ? result.order as Order : o));
-      if ((status === 'ready_for_pickup' || status === 'out_for_delivery') && (currentUser?.role === 'restaurant' || currentUser?.role === 'admin')) {
-        void bhojjApi.autoAssignRider(orderId).then(assignResult => {
-          if (assignResult.order) setOrders(prev => prev.map(o => o.id === orderId ? assignResult.order as Order : o));
-          void loadRemoteData();
-        }).catch(() => undefined);
+  const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
+    try {
+      const result = await bhojjApi.updateOrderStatus(orderId, status);
+      let serverOrder = result.order as Order | undefined;
+
+      if (serverOrder) {
+        setOrders(prev => prev.map(order => order.id === orderId ? serverOrder as Order : order));
+      } else {
+        await loadRemoteData();
+        serverOrder = orders.find(order => order.id === orderId);
       }
-    }).catch((error: any) => addNotification('Order Update Failed', error?.message || 'Server rejected this status change.', 'system'));
-    let updatedOrderObj: Order | undefined;
 
-    setOrders(prev => prev.map(order => {
-      if (order.id === orderId) {
-        let updateMsg = `Order #${orderId} status changed to ${status.replace(/_/g, ' ').toUpperCase()}`;
-        if (status === 'accepted') updateMsg = `Kitchen accepted order #${orderId}. Preparing food now in pure cow ghee!`;
-        if (status === 'preparing') updateMsg = `Chef is preparing your fresh Satvik delicacies for order #${orderId}.`;
-        if (status === 'ready_for_pickup') updateMsg = `Order #${orderId} is packed & ready for delivery partner pickup.`;
-        if (status === 'out_for_delivery') updateMsg = `Rider picked up order #${orderId} and is en-route to customer!`;
-        if (status === 'delivered') updateMsg = `Order #${orderId} was delivered successfully! Shubh Bhojan!`;
-
-        addNotification('Order Status Update', updateMsg, 'order');
-        updatedOrderObj = { ...order, status };
-        return updatedOrderObj;
+      // A successful API response is required before local state or notifications
+      // claim that an order transition occurred.
+      if ((status === 'ready_for_pickup' || status === 'out_for_delivery') &&
+          (currentUser?.role === 'restaurant' || currentUser?.role === 'admin')) {
+        try {
+          const assignment = await bhojjApi.autoAssignRider(orderId);
+          if (assignment.order) {
+            serverOrder = assignment.order as Order;
+            setOrders(prev => prev.map(order => order.id === orderId ? assignment.order as Order : order));
+          }
+        } catch (assignmentError: any) {
+          addNotification(
+            'Rider Assignment Pending',
+            assignmentError?.message || 'Order status was saved, but a rider could not be assigned yet.',
+            'system'
+          );
+        }
       }
-      return order;
-    }));
 
-    if (updatedOrderObj) {
+      if (!serverOrder) {
+        await loadRemoteData();
+        return;
+      }
+
+      const confirmedStatus = serverOrder.status || status;
+      let updateMsg = `Order #${orderId} status changed to ${confirmedStatus.replace(/_/g, ' ').toUpperCase()}.`;
+      if (confirmedStatus === 'accepted') updateMsg = `Kitchen accepted order #${orderId}.`;
+      if (confirmedStatus === 'preparing') updateMsg = `Kitchen is preparing order #${orderId}.`;
+      if (confirmedStatus === 'ready_for_pickup') updateMsg = `Order #${orderId} is ready for delivery partner pickup.`;
+      if (confirmedStatus === 'out_for_delivery') updateMsg = `Order #${orderId} is out for delivery.`;
+      if (confirmedStatus === 'delivered') updateMsg = `Order #${orderId} was delivered successfully.`;
+      addNotification('Order Status Update', updateMsg, 'order');
+
       realtimeService.broadcastAlert({
         id: `alert-status-${orderId}-${Date.now()}`,
         type: 'delivery_update',
-        title: `🛵 Order #${orderId}: ${
-          status === 'accepted' ? 'Accepted by Kitchen' :
-          status === 'preparing' ? 'Food Being Cooked' :
-          status === 'ready_for_pickup' ? 'Ready for Pickup' :
-          status === 'out_for_delivery' ? 'Out for Delivery' :
-          status === 'delivered' ? 'Delivered!' :
-          status.replace(/_/g, ' ').toUpperCase()
-        }`,
-        message: status === 'accepted' ? 'Kitchen accepted your order and started preparations.' :
-                 status === 'preparing' ? 'Chef is cooking your order with pure ingredients.' :
-                 status === 'ready_for_pickup' ? 'Food packed and waiting for rider pickup.' :
-                 status === 'out_for_delivery' ? `Rider is on the way! Share OTP ${(updatedOrderObj as Order).otp} upon arrival.` :
-                 status === 'delivered' ? 'Order delivered successfully! Thank you for dining with Bhojj.' :
-                 `Status updated to ${status.replace(/_/g, ' ').toUpperCase()}`,
+        title: `Order #${orderId}: ${confirmedStatus.replace(/_/g, ' ').toUpperCase()}`,
+        message: confirmedStatus === 'out_for_delivery'
+          ? 'Your order is on the way. Share the delivery OTP with your rider when they arrive.'
+          : updateMsg,
         orderId,
-        order: updatedOrderObj,
+        order: serverOrder,
         timestamp: Date.now(),
         targetRole: 'customer',
-        targetCustomerId: (updatedOrderObj as Order).customerId,
+        targetCustomerId: serverOrder.customerId,
         soundAlert: true
       });
+    } catch (error: any) {
+      addNotification('Order Update Failed', error?.message || 'The server rejected this status change. The order was not changed locally.', 'system');
+      void loadRemoteData();
     }
   };
 
