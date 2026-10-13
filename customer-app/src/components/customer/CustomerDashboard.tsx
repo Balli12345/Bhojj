@@ -424,13 +424,13 @@ export const CustomerDashboard: React.FC = () => {
   });
 
   // Execute Order Placement once user is authenticated
-  const executeOrderPlacement = (confirmedAddress?: string) => {
+  const executeOrderPlacement = async (confirmedAddress?: string) => {
     if (cart.length === 0) return;
     const finalAddress = confirmedAddress || deliveryAddress;
     const primaryRestId = cart[0].menuItem.restaurantId;
     const restObj = restaurants.find(r => r.id === primaryRestId);
 
-    const newOrder = placeOrder({
+    const newOrder = await placeOrder({
       customerId: currentUser?.id || 'user-guest',
       customerName: currentUser?.name || authName || 'Priya Sharma',
       customerPhone: currentUser?.phone || authPhone || '+91 98765 43210',
@@ -453,8 +453,467 @@ export const CustomerDashboard: React.FC = () => {
       orderTime: 'Just now',
       estimatedDeliveryTime: 'In 25-30 mins',
       paymentMethod,
-      paymentStatus: 'Paid',
+      paymentStatus: 'Pending (COD)',
+import React, { useState, useEffect } from 'react';
+import { useApp } from '../../context/AppContext';
+import { MenuItem, Order, OrderStatus } from '../../types';
+import { LocationRestaurantsSection } from './LocationRestaurantsSection';
+import { VisualOrderTracker } from './VisualOrderTracker';
+import { CustomerProfile } from './CustomerProfile';
+import { CouponSelectionModal } from './CouponSelectionModal';
+import { LiveDeliveryMap } from '../common/LiveDeliveryMap';
+import confetti from 'canvas-confetti';
+import { 
+  Search, 
+  UtensilsCrossed, 
+  ShoppingBag, 
+  Clock, 
+  Star, 
+  Plus, 
+  Minus, 
+  Check, 
+  MapPin, 
+  Tag, 
+  Calendar, 
+  Sparkles, 
+  Bike, 
+  Phone, 
+  ArrowRight, 
+  X, 
+  CreditCard, 
+  Banknote, 
+  QrCode, 
+  Store, 
+  Lock, 
+  User, 
+  Mail,
+  Flame,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  CheckCheck,
+  Heart,
+  Soup,
+  Coffee,
+  SunMedium,
+  Award,
+  ShieldCheck,
+  CheckCircle2,
+  SlidersHorizontal,
+  Leaf,
+  Wallet,
+  AlertCircle,
+  Smartphone,
+  Ticket,
+  Utensils
+} from 'lucide-react';
+import { CustomerWallet } from './CustomerWallet';
+import { ZomatoDiningSection } from './ZomatoDiningSection';
+import { ZomatoTableBookingModal } from './ZomatoTableBookingModal';
+
+export const CustomerDashboard: React.FC = () => {
+  const { 
+    currentUser, 
+    restaurants, 
+    menuItems, 
+    cart, 
+    isCartOpen,
+    setIsCartOpen,
+    addToCart, 
+    updateCartQuantity, 
+    removeFromCart, 
+    clearCart, 
+    placeOrder, 
+    orders, 
+    rateOrder,
+    tiffinSubscriptions, 
+    createTiffinSubscription,
+    setCurrentView,
+    login,
+    register,
+    globalSearchQuery,
+    setGlobalSearchQuery,
+    selectedLocationFilter,
+    setSelectedLocationFilter,
+    openProductDetails,
+    openRestaurantDetails,
+    openCategoryDetails,
+    heroSlides,
+    categoriesList,
+    portalConfig,
+    coupons,
+    appliedCoupon,
+    applyCouponCode,
+    removeAppliedCoupon,
+    simulateOrderProgression,
+    walletBalance,
+    walletTransactions,
+    addFundsToWallet,
+    tableBookings,
+    openTableBookingModal,
+    getRiderTelemetry,
+  } = useApp();
+
+  // Active view tab in customer experience
+  const [activeTab, setActiveTab] = useState<'menu' | 'dining' | 'orders' | 'tiffin' | 'profile' | 'wallet'>('menu');
+  const [inlineMapOpen, setInlineMapOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [vegOnly, setVegOnly] = useState(true);
+  const [fastDeliveryOnly, setFastDeliveryOnly] = useState(false);
+  const [ratingsOnly, setRatingsOnly] = useState(false);
+  const [dealsOnly, setDealsOnly] = useState(false);
+  const [sortBy, setSortBy] = useState<'relevance' | 'rating' | 'price_low' | 'price_high'>('relevance');
+
+  // Active bookings count for badge
+  const activeTableBookingsCount = tableBookings.filter(b => 
+    b.status === 'confirmed' || b.status === 'ready_for_seating' || b.status === 'seated'
+  ).length;
+
+  // Listen for open-customer-tab events (e.g. from header profile button)
+  useEffect(() => {
+    const handleTabChange = (e: any) => {
+      if (e.detail && ['menu', 'dining', 'orders', 'tiffin', 'profile', 'wallet'].includes(e.detail)) {
+        setActiveTab(e.detail);
+      }
+    };
+    window.addEventListener('open-customer-tab', handleTabChange);
+    return () => window.removeEventListener('open-customer-tab', handleTabChange);
+  }, []);
+
+  // Coupon state
+  const [couponInput, setCouponInput] = useState('');
+  const [showCouponModal, setShowCouponModal] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  const [couponSuccessMsg, setCouponSuccessMsg] = useState('');
+  const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
+
+  // Address & Payment
+  const [deliveryAddress, setDeliveryAddress] = useState(
+    currentUser?.address || 'Room 108, Shri Giriraj Seva Sadan, Dan Ghati Ashram, Goverdhan'
+  );
+  const [paymentMethod, setPaymentMethod] = useState<'Bhojj Wallet' | 'UPI' | 'Card' | 'Cash on Delivery'>('Bhojj Wallet');
+  const [showWalletShortfallModal, setShowWalletShortfallModal] = useState(false);
+  const [isInstantTopUpLoading, setIsInstantTopUpLoading] = useState(false);
+  const [placedOrderInfo, setPlacedOrderInfo] = useState<Order | null>(null);
+  const [selectedOrderForTracking, setSelectedOrderForTracking] = useState<Order | null>(null);
+
+  // Guest Checkout Auth Modal State
+  const [showCheckoutAuthModal, setShowCheckoutAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authEmail, setAuthEmail] = useState('priya@example.com');
+  const [authPassword, setAuthPassword] = useState('password123');
+  const [authName, setAuthName] = useState('Priya Sharma');
+  const [authPhone, setAuthPhone] = useState('+91 98765 43210');
+  const [authAddress, setAuthAddress] = useState(deliveryAddress);
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+
+  // Ratings
+  const [ratingOrder, setRatingOrder] = useState<Order | null>(null);
+  const [ratingStars, setRatingStars] = useState(5);
+  const [ratingComment, setRatingComment] = useState('');
+
+  // Dynamic CMS Hero Slides from AppContext
+  const activeSlides = (heroSlides || []).filter(s => s.isActive);
+  const foodHeroSlides = activeSlides.length > 0 ? activeSlides : (heroSlides || []);
+  const [foodHeroSlide, setFoodHeroSlide] = useState(0);
+  const [isSliderHovered, setIsSliderHovered] = useState(false);
+
+  // Safe slide index
+  const currentSlideIndex = foodHeroSlide < foodHeroSlides.length ? foodHeroSlide : 0;
+
+  // Auto-play food slider every 5.5s (pauses on hover)
+  useEffect(() => {
+    if (isSliderHovered || foodHeroSlides.length <= 1) return;
+    const timer = setInterval(() => {
+      setFoodHeroSlide(prev => (prev + 1) % foodHeroSlides.length);
+    }, 5500);
+    return () => clearInterval(timer);
+  }, [isSliderHovered, foodHeroSlides.length]);
+
+  // Handler to add featured food slide item directly to cart
+  const handleFoodSlideAddToCart = (slide: typeof foodHeroSlides[0]) => {
+    const found = menuItems.find(m => m.id === slide.menuId);
+    if (found) {
+      addToCart(found, 1);
+    } else {
+      const fallbackItem: MenuItem = {
+        id: slide.menuId,
+        restaurantId: 'rest-1',
+        name: slide.title,
+        description: slide.subtitle,
+        price: slide.price,
+        category: slide.category,
+        image: slide.image,
+        isVeg: true,
+        inStock: true,
+        rating: slide.rating,
+        reviewsCount: 150,
+        prepTimeMinutes: 20,
+      };
+      addToCart(fallbackItem, 1);
+    }
+    confetti({
+      particleCount: 35,
+      spread: 60,
+      origin: { y: 0.7 },
+      colors: ['#ea580c', '#f59e0b', '#16a34a']
     });
+  };
+
+  // Listen to custom navigation events from Header
+  useEffect(() => {
+    const handleTabChange = (e: any) => {
+      if (e.detail) setActiveTab(e.detail);
+    };
+    const handleCategoryChange = (e: any) => {
+      if (e.detail) {
+        setSelectedCategory(e.detail);
+        setActiveTab('menu');
+        const el = document.getElementById('menu-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+    window.addEventListener('open-customer-tab', handleTabChange);
+    window.addEventListener('filter-category', handleCategoryChange);
+    return () => {
+      window.removeEventListener('open-customer-tab', handleTabChange);
+      window.removeEventListener('filter-category', handleCategoryChange);
+    };
+  }, []);
+
+  // Steal Deals Data matching screenshot
+  const stealDeals = [
+    {
+      id: 'deal-1',
+      menuId: 'satvik-1',
+      title: 'Shri Radharani Desi Ghee Samosa (2 pcs)',
+      discountBadge: '33% OFF',
+      tagBadge: 'Bestseller Deal',
+      prepTime: '25-30 min',
+      rating: 4.9,
+      reviewsCount: 312,
+      description: 'Crisp golden crust fried in pure cow ghee, spiced potato & cashew stuffing. Pure Satvik (No Onion, No Garlic).',
+      price: 60,
+      mrp: 90,
+      savings: 30,
+      image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=500&auto=format&fit=crop&q=80',
+      category: 'Snacks' as MenuItem['category'],
+      isVeg: true,
+    },
+    {
+      id: 'deal-2',
+      menuId: 'satvik-2',
+      title: 'Bhojj Special Satvik Daily Thali',
+      discountBadge: 'FLAT ₹50 OFF',
+      tagBadge: 'Top Pick Today',
+      prepTime: '30-35 min',
+      rating: 4.9,
+      reviewsCount: 480,
+      description: '4 Desi Ghee Phulkas, Arhar Dal Tadka, Paneer Bhujia, Seasonal Subzi, Basmati Jeera Rice, Sweet Prasad & Salad.',
+      price: 150,
+      mrp: 200,
+      savings: 50,
+      image: 'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=500&auto=format&fit=crop&q=80',
+      category: 'Daily Thali' as MenuItem['category'],
+      isVeg: true,
+    },
+    {
+      id: 'deal-3',
+      menuId: 'satvik-3',
+      title: 'Goverdhan Mathura Peda (250g)',
+      discountBadge: '23% OFF',
+      tagBadge: 'Temple Prasad',
+      prepTime: '20-25 min',
+      rating: 4.9,
+      reviewsCount: 295,
+      description: 'Sacred Goverdhan-style caramelised mawa pedas rolled in boora and cardamom. 100% pure milk mawa.',
+      price: 135,
+      mrp: 175,
+      savings: 40,
+      image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=500&auto=format&fit=crop&q=80',
+      category: 'Prasad' as MenuItem['category'],
+      isVeg: true,
+    },
+    {
+      id: 'deal-4',
+      menuId: 'satvik-4',
+      title: 'Parikrama Special Dry Mathri Box (400g)',
+      discountBadge: 'SAVE ₹25',
+      tagBadge: 'Travel Snack',
+      prepTime: '20-25 min',
+      rating: 4.8,
+      reviewsCount: 160,
+      description: 'Hygienic crunchy ajwain mathris, perfect for parikrama pilgrims and ashram storage.',
+      price: 110,
+      mrp: 135,
+      savings: 25,
+      image: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=500&auto=format&fit=crop&q=80',
+      category: 'Snacks' as MenuItem['category'],
+      isVeg: true,
+    },
+  ];
+
+  // Categories list dynamically driven by CMS
+  const categoryTiles = (categoriesList || [])
+    .filter(c => c.isActive)
+    .map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      desc: cat.desc,
+      badge: cat.badge,
+      icon: cat.id === 'Daily Thali' ? UtensilsCrossed :
+            cat.id === 'Daily Meals' ? Soup :
+            cat.id === 'Prasad' ? SunMedium :
+            cat.id === 'Pooja Orders' ? Award :
+            cat.id === 'Bhandara' ? Store : Sparkles,
+      count: cat.id === 'All' 
+        ? menuItems.length 
+        : menuItems.filter(m => m.category === cat.id || m.category?.toLowerCase() === cat.name.toLowerCase()).length
+    }));
+
+  // Cart Calculations
+  const cartSubtotal = cart.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
+  const deliveryFee = cartSubtotal > 199 || cartSubtotal === 0 ? 0 : 30;
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const taxes = Math.round(cartSubtotal * 0.05);
+  const grandTotal = Math.max(0, cartSubtotal + deliveryFee + taxes - discountAmount);
+
+  // Coupon copy handler
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCoupon(code);
+    setCouponInput(code);
+    const res = applyCouponCode(code, cartSubtotal);
+    if (res.success) {
+      setCouponError('');
+      setCouponSuccessMsg(res.message);
+    } else {
+      setCouponError(res.message);
+    }
+    setTimeout(() => {
+      setCopiedCoupon(null);
+      setCouponSuccessMsg('');
+    }, 3000);
+  };
+
+  const handleApplyCoupon = () => {
+    if (!couponInput.trim()) {
+      setCouponError('Please enter a coupon code (e.g. BHOJJ50 or RADHA25)');
+      return;
+    }
+    const res = applyCouponCode(couponInput, cartSubtotal);
+    if (res.success) {
+      setCouponError('');
+      setCouponSuccessMsg(res.message);
+      setTimeout(() => setCouponSuccessMsg(''), 4000);
+    } else {
+      setCouponError(res.message);
+      setCouponSuccessMsg('');
+    }
+  };
+
+  // Add deal directly to cart
+  const handleAddDealToCart = (deal: typeof stealDeals[0]) => {
+    const existing = menuItems.find(m => m.id === deal.menuId);
+    if (existing) {
+      addToCart(existing, 1);
+    } else {
+      const fallbackItem: MenuItem = {
+        id: deal.menuId,
+        restaurantId: 'rest-1',
+        name: deal.title,
+        description: deal.description,
+        price: deal.price,
+        category: deal.category,
+        isVeg: deal.isVeg,
+        image: deal.image,
+        rating: deal.rating,
+        reviewsCount: deal.reviewsCount,
+        inStock: true,
+        prepTimeMinutes: 25,
+      };
+      addToCart(fallbackItem, 1);
+    }
+  };
+
+  // Filtered Menu Items
+  const filteredMenuItems = menuItems.filter((dish) => {
+    // Category filter
+    if (selectedCategory !== 'All') {
+      if (selectedCategory === 'Daily Thali' && (dish.category === 'Daily Thali' || dish.category === 'Thali')) return true;
+      if (selectedCategory === 'Daily Meals' && (dish.category === 'Daily Meals' || dish.category === 'Curry & Sabzi')) return true;
+      if (selectedCategory === 'Prasad' && (dish.category === 'Prasad' || dish.category === 'Desserts & Drinks')) return true;
+      if (dish.category !== selectedCategory) return false;
+    }
+    if (vegOnly && !dish.isVeg) return false;
+
+    // Location Filter
+    if (selectedLocationFilter !== 'All') {
+      const rest = restaurants.find(r => r.id === dish.restaurantId);
+      if (rest?.locationZone && !rest.locationZone.toLowerCase().includes(selectedLocationFilter.toLowerCase())) {
+        return false;
+      }
+    }
+
+    // Effective search (local or global)
+    const effectiveSearch = (searchQuery || globalSearchQuery).trim().toLowerCase();
+    if (effectiveSearch) {
+      const rest = restaurants.find(r => r.id === dish.restaurantId);
+      const matchName = dish.name.toLowerCase().includes(effectiveSearch);
+      const matchDesc = dish.description.toLowerCase().includes(effectiveSearch);
+      const matchCat = dish.category.toLowerCase().includes(effectiveSearch);
+      const matchRest = rest?.name.toLowerCase().includes(effectiveSearch) || false;
+      const matchZone = rest?.locationZone?.toLowerCase().includes(effectiveSearch) || false;
+      if (!matchName && !matchDesc && !matchCat && !matchRest && !matchZone) return false;
+    }
+
+    if (fastDeliveryOnly && dish.prepTimeMinutes > 25) return false;
+    if (ratingsOnly && dish.rating < 4.5) return false;
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === 'rating') return b.rating - a.rating;
+    if (sortBy === 'price_low') return a.price - b.price;
+    if (sortBy === 'price_high') return b.price - a.price;
+    return 0;
+  });
+
+  // Execute Order Placement once user is authenticated
+  const executeOrderPlacement = async (confirmedAddress?: string) => {
+    if (cart.length === 0) return;
+    const finalAddress = confirmedAddress || deliveryAddress;
+    const primaryRestId = cart[0].menuItem.restaurantId;
+    const restObj = restaurants.find(r => r.id === primaryRestId);
+
+    const newOrder = await placeOrder({
+      customerId: currentUser?.id || 'user-guest',
+      customerName: currentUser?.name || authName || 'Priya Sharma',
+      customerPhone: currentUser?.phone || authPhone || '+91 98765 43210',
+      deliveryAddress: finalAddress,
+      restaurantId: primaryRestId,
+      restaurantName: restObj?.name || 'Goverdhan Satvik Rasoi',
+      items: cart.map(ci => ({
+        id: ci.menuItem.id,
+        name: ci.menuItem.name,
+        price: ci.menuItem.price,
+        quantity: ci.quantity,
+        isVeg: ci.menuItem.isVeg,
+      })),
+      subtotal: cartSubtotal,
+      deliveryFee,
+      tax: taxes,
+      discount: discountAmount,
+      totalAmount: grandTotal,
+      status: 'placed',
+      orderTime: 'Just now',
+      estimatedDeliveryTime: 'In 25-30 mins',
+      paymentMethod,
+      paymentStatus: 'Pending (COD)',
+    });
+
+    // Keep cart and checkout open unless the central backend confirms the order.
+    if (!newOrder) return;
 
     clearCart();
     setIsCartOpen(false);
