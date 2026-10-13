@@ -692,16 +692,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
   const loadRemoteData = async () => {
     try {
       const data = await bhojjApi.getBootstrap();
-      if (Array.isArray(data.restaurants) && data.restaurants.length) setRestaurants(data.restaurants);
-      if (Array.isArray(data.menuItems) && data.menuItems.length) setMenuItems(data.menuItems);
+      if (Array.isArray(data.restaurants)) setRestaurants(data.restaurants);
+      if (Array.isArray(data.menuItems)) setMenuItems(data.menuItems);
       if (Array.isArray(data.orders)) setOrders(data.orders);
-      if (Array.isArray(data.riders) && data.riders.length) setRiders(data.riders);
-      if (Array.isArray(data.coupons) && data.coupons.length) setCoupons(data.coupons);
-      if (Array.isArray(data.users) && data.users.length) setUsers(data.users);
-      if (Array.isArray(data.heroSlides) && data.heroSlides.length) setHeroSlides(data.heroSlides);
+      if (Array.isArray(data.riders)) setRiders(data.riders);
+      if (Array.isArray(data.coupons)) setCoupons(data.coupons);
+      if (Array.isArray(data.users)) setUsers(data.users);
+      if (Array.isArray(data.heroSlides)) setHeroSlides(data.heroSlides);
       if (data.headerConfig) setHeaderConfig((prev: any) => ({ ...prev, ...data.headerConfig }));
       if (data.footerConfig) setFooterConfig((prev: any) => ({ ...prev, ...data.footerConfig }));
-      if (Array.isArray(data.categoriesList) && data.categoriesList.length) setCategoriesList(data.categoriesList);
+      if (Array.isArray(data.categoriesList)) setCategoriesList(data.categoriesList);
       if (data.portalConfig) setPortalConfig((prev: any) => ({ ...prev, ...data.portalConfig }));
       if (data.user) {
         setCurrentUser(data.user as User);
