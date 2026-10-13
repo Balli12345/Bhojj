@@ -71,12 +71,12 @@ export const DeliveryDashboard: React.FC = () => {
     o.status === 'delivered'
   );
 
-  const handleVerifyOtpSubmit = (e: React.FormEvent) => {
+  const handleVerifyOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeOrder) return;
     setOtpError('');
 
-    const res = completeDeliveryWithOtp(activeOrder.id, enteredOtp);
+    const res = await completeDeliveryWithOtp(activeOrder.id, enteredOtp);
     if (!res.success) {
       setOtpError(res.message);
     } else {
@@ -328,10 +328,6 @@ export const DeliveryDashboard: React.FC = () => {
                         Customer will show you a 4-digit PIN on their Bhojj app. Enter that PIN to securely finish delivery and unlock payout.
                       </p>
                       
-                      {/* Hint for tester */}
-                      <div className="mt-3 p-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-[11px] text-amber-300">
-                        💡 Demo Hint: Customer's OTP for this order is <strong className="font-mono text-white text-xs">{activeOrder.otp}</strong>
-                      </div>
                     </div>
 
                     <form onSubmit={handleVerifyOtpSubmit} className="mt-6 space-y-3">

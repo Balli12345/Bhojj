@@ -81,7 +81,7 @@ interface AppContextType {
   orders: Order[];
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   assignRiderToOrder: (orderId: string, riderId: string) => void;
-  completeDeliveryWithOtp: (orderId: string, otp: string) => { success: boolean; message: string };
+  completeDeliveryWithOtp: (orderId: string, otp: string) => Promise<{ success: boolean; message: string }>;
   rateOrder: (orderId: string, rating: number, feedback: string) => void;
   
   // Cart
@@ -991,7 +991,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
   };
 
   // Orders
-  const placeOrder = (details: {
+  const placeOrder = async (details: {
     deliveryAddress: string;
     paymentMethod: 'UPI' | 'Cash on Delivery' | 'Card / NetBanking' | 'Bhojj Wallet';
     discount?: number;
@@ -1014,6 +1014,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
   }) => {
     if (cart.length === 0 && (!details.items || details.items.length === 0)) return null;
 
+    // Match the backend's currently supported payment path; do not locally debit wallet
+    // or mark an unverified online payment as paid.
+    if (details.paymentMethod !== 'Cash on Delivery') {
+      addNotification(
+        'Payment Method Unavailable',
+        'Online and Bhojj Wallet payments are temporarily unavailable until secure server-side payment verification is enabled. Please choose Cash on Delivery.',
+        'system',
+        'customer'
+      );
+      return null;
+    }
+
     const calcSubtotal = cart.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
     const subtotal = details.subtotal ?? calcSubtotal;
     const deliveryFee = details.deliveryFee ?? (subtotal > 299 ? 0 : 30);
@@ -1021,59 +1033,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
     const discount = details.discount ?? 0;
     const totalAmount = details.totalAmount ?? Math.max(0, subtotal + deliveryFee + tax - discount);
 
-    if (details.paymentMethod === 'Bhojj Wallet') {
-      if (walletBalance < totalAmount) {
-        addNotification(
-          'Wallet Balance Insufficient',
-          `Order requires ₹${totalAmount}, but your wallet balance is ₹${walletBalance}. Please top up your wallet.`,
-          'system',
-          'customer'
-        );
-        return null;
-      }
-    }
-
     const firstRestId = details.restaurantId || (cart[0] ? cart[0].menuItem.restaurantId : 'rest-1');
     const restObj = restaurants.find(r => r.id === firstRestId);
     const firstRestName = restObj?.name || '';
     const restName = details.restaurantName || (restObj ? restObj.name : 'Bhojj Kitchen Partner');
 
-    // Generate random 4-digit OTP for delivery verification
-    const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    const orderId = `ORD-${Math.floor(7000 + Math.random() * 3000)}`;
-
-    if (details.paymentMethod === 'Bhojj Wallet') {
-      deductWalletFunds(totalAmount, orderId, `1-Click Checkout for Order #${orderId}`);
+    // Never show a successful order until the central API has committed it.
+    // Server-calculated prices, ID, status and OTP are authoritative.
+    if (currentUser?.role !== 'customer') {
+      addNotification('Login Required', 'Please sign in with your customer account before placing an order.', 'system', 'customer');
+      return null;
     }
-
-    const newOrder: Order = {
-      id: orderId,
-      customerId: details.customerId || currentUser?.id || 'guest-user',
-      customerName: details.customerName || currentUser?.name || 'Priya Sharma',
-      customerPhone: details.customerPhone || currentUser?.phone || '+91 98765 43210',
-      deliveryAddress: details.deliveryAddress,
-      restaurantId: firstRestId,
-      restaurantName: restName,
-      items: details.items || cart.map(ci => ({
-        id: ci.menuItem.id,
-        name: ci.menuItem.name,
-        price: ci.menuItem.price,
-        quantity: ci.quantity,
-        isVeg: ci.menuItem.isVeg,
-      })),
-      subtotal,
-      deliveryFee,
-      tax,
-      discount,
-      totalAmount,
-      status: details.status || 'placed',
-      orderTime: details.orderTime || 'Just now',
-      estimatedDeliveryTime: details.estimatedDeliveryTime || 'In 25-30 mins',
-      paymentMethod: details.paymentMethod,
-      paymentStatus: details.paymentMethod === 'Cash on Delivery' ? 'Pending (COD)' : 'Paid',
-      walletAmountUsed: details.paymentMethod === 'Bhojj Wallet' ? totalAmount : 0,
-      otp: randomOtp,
-    };
+    const requestedItems = details.items || cart.map(ci => ({
+      id: ci.menuItem.id,
+      name: ci.menuItem.name,
+      price: ci.menuItem.price,
+      quantity: ci.quantity,
+      isVeg: ci.menuItem.isVeg,
+    }));
+    let serverResult: any;
+    try {
+      serverResult = await bhojjApi.createOrder({
+        deliveryAddress: details.deliveryAddress,
+        paymentMethod: details.paymentMethod,
+        customerId: currentUser.id,
+        customerName: details.customerName || currentUser.name,
+        customerPhone: details.customerPhone || currentUser.phone,
+        restaurantId: firstRestId,
+        items: requestedItems.map((i: any) => ({
+          id: i.id,
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity,
+          isVeg: i.isVeg ?? i.menuItem?.isVeg ?? true,
+        })),
+        deliveryCoordinates: details.deliveryCoordinates,
+        restaurantCoordinates: details.restaurantCoordinates || restObj?.coordinates,
+        estimatedDeliveryTime: details.estimatedDeliveryTime,
+      });
+    } catch (error: any) {
+      addNotification('Order Not Placed', error?.message || 'Bhojj could not confirm this order. Your cart has been kept; please retry.', 'system', 'customer');
+      return null;
+    }
+    if (!serverResult?.success || !serverResult?.order?.id) {
+      addNotification('Order Not Placed', 'The server did not confirm this order. Your cart has been kept; please retry.', 'system', 'customer');
+      return null;
+    }
+    const newOrder: Order = serverResult.order as Order;
 
     setOrders(prev => [newOrder, ...prev]);
     clearCart();
@@ -1081,9 +1087,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
 
     addNotification(
       'New Order Placed!',
-      details.paymentMethod === 'Bhojj Wallet'
-        ? `Order #${newOrder.id} booked with Bhojj Wallet (₹${totalAmount} debited). OTP: ${randomOtp}`
-        : `Order #${newOrder.id} for ₹${totalAmount} has been sent to ${restName}. OTP: ${randomOtp}`,
+      `Order #${newOrder.id} for ₹${totalAmount} has been submitted for ${restName}. OTP: ${newOrder.otp || 'assigned securely'}`,
       'order',
       'customer'
     );
@@ -1108,41 +1112,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
       soundAlert: true
     });
 
-    // Persist the same order to the central PHP/MySQL backend. The existing UI remains
-    // optimistic so the current design/checkout interaction does not change.
-    if (currentUser?.role === 'customer') {
-      void bhojjApi.createOrder({
-        deliveryAddress: details.deliveryAddress,
-        paymentMethod: details.paymentMethod,
-        discount,
-        customerId: currentUser.id,
-        customerName: details.customerName || currentUser.name,
-        customerPhone: details.customerPhone || currentUser.phone,
-        restaurantId: details.restaurantId || firstRestId,
-        restaurantName: details.restaurantName || firstRestName,
-        items: newOrder.items.map((i: any) => ({
-          id: i.id,
-          name: i.name,
-          price: i.price,
-          quantity: i.quantity,
-          isVeg: i.isVeg ?? i.menuItem?.isVeg ?? true,
-        })),
-        subtotal,
-        deliveryFee,
-        tax,
-        totalAmount,
-        estimatedDeliveryTime: details.estimatedDeliveryTime,
-        deliveryCoordinates: details.deliveryCoordinates,
-        restaurantCoordinates: details.restaurantCoordinates || restObj?.coordinates,
-      }).then(result => {
-        if (result.order) {
-          setOrders(prev => prev.map(o => o.id === newOrder.id ? result.order as Order : o));
-        }
-        void loadRemoteData();
-      }).catch((error: any) => {
-        addNotification('Order Sync Failed', error?.message || 'Order could not be saved to Bhojj server.', 'system');
-      });
-    }
+    // Refresh server-owned order state after successful creation.
+    void loadRemoteData();
 
     return newOrder;
   };
@@ -1220,30 +1191,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
     }).catch((error: any) => addNotification('Run Acceptance Failed', error?.message || 'Unable to accept delivery run.', 'alert', 'delivery'));
   };
 
-  const completeDeliveryWithOtp = (orderId: string, enteredOtp: string) => {
+  const completeDeliveryWithOtp = async (orderId: string, enteredOtp: string): Promise<{ success: boolean; message: string }> => {
     const targetOrder = orders.find(o => o.id === orderId);
     if (!targetOrder) return { success: false, message: 'Order not found' };
-
-    if (targetOrder.otp && targetOrder.otp.trim() !== enteredOtp.trim()) {
-      return { success: false, message: 'Incorrect OTP! Please ask customer for the 4-digit PIN.' };
+    if (!/^\\d{4,6}$/.test(enteredOtp.trim())) {
+      return { success: false, message: 'Enter the valid customer OTP.' };
     }
 
-    // Server is authoritative: never mark a delivery complete locally until
-    // PHP verifies the OTP and commits the delivered state.
-    void bhojjApi.completeDelivery(orderId, enteredOtp).then(async result => {
+    // The PHP API is authoritative. Do not report success until the server
+    // verifies the OTP and commits the delivery state.
+    try {
+      const result = await bhojjApi.completeDelivery(orderId, enteredOtp.trim());
       if (result.order) {
         setOrders(prev => prev.map(o => o.id === orderId ? result.order as Order : o));
       } else {
         await loadRemoteData();
       }
-      const deliveryEarning = 60 + Math.floor(Math.random() * 25);
-      addNotification('Delivery Completed!', `Order #${orderId} delivered successfully! +₹${deliveryEarning} credited.`, 'earnings', 'delivery');
-      addNotification('Order Delivered!', `Your Bhojj order #${orderId} has arrived! Enjoy your delicious meal.`, 'order', 'customer');
-    }).catch((error: any) => {
-      addNotification('Delivery Completion Failed', error?.message || 'Server rejected delivery OTP.', 'alert', 'delivery');
-    });
-
-    return { success: true, message: 'Delivery verification submitted to server.' };
+      addNotification('Delivery Completed!', `Order #${orderId} delivered successfully.`, 'earnings', 'delivery');
+      addNotification('Order Delivered!', `Your Bhojj order #${orderId} has arrived! Enjoy your meal.`, 'order', 'customer');
+      return { success: true, message: 'Delivery verified by server.' };
+    } catch (error: any) {
+      const message = error?.message || 'Server rejected delivery OTP.';
+      addNotification('Delivery Completion Failed', message, 'alert', 'delivery');
+      return { success: false, message };
+    }
   };
 
   const rateOrder = (orderId: string, rating: number, feedback: string) => {
