@@ -1011,7 +1011,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
     paymentStatus?: 'Paid' | 'Pending (COD)';
     deliveryCoordinates?: Coordinates;
     restaurantCoordinates?: Coordinates;
-  }) => Promise<Order | null>;
+  }) => {
     if (cart.length === 0 && (!details.items || details.items.length === 0)) return null;
 
     // Match the backend's currently supported payment path; do not locally debit wallet
