@@ -1224,9 +1224,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
     const targetOrder = orders.find(o => o.id === orderId);
     if (!targetOrder) return { success: false, message: 'Order not found' };
 
-    if (targetOrder.otp && targetOrder.otp.trim() !== enteredOtp.trim()) {
-      return { success: false, message: 'Incorrect OTP! Please ask customer for the 4-digit PIN.' };
-    }
+    // Do not compare against a possibly stale/mock OTP in local UI state.
+    // The central PHP API is authoritative and validates the entered OTP.
 
     // Server is authoritative: never mark a delivery complete locally until
     // PHP verifies the OTP and commits the delivered state.
@@ -1243,7 +1242,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode, initialView?: Po
       addNotification('Delivery Completion Failed', error?.message || 'Server rejected delivery OTP.', 'alert', 'delivery');
     });
 
-    return { success: true, message: 'Delivery verification submitted to server.' };
+    return { success: true, message: 'OTP verification is pending server confirmation.' };
   };
 
   const rateOrder = (orderId: string, rating: number, feedback: string) => {
