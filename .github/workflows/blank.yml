@@ -2,7 +2,7 @@ name: BHOJJ Native Apps CI
 
 on:
   push:
-    branches: [main, "fix/**"]
+    branches: [main, "fix/**", "render-deploy-2026-10-13"]
   workflow_dispatch:
 
 concurrency:
@@ -47,3 +47,19 @@ jobs:
           path: BHOJJ-${{ matrix.app }}-UPDATED.zip
           if-no-files-found: error
           retention-days: 14
+
+  php-lint:
+    name: PHP syntax validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: none
+      - name: Lint backend PHP entrypoints
+        run: |
+          php -l backend/index.php
+          php -l backend/api/index.php
